@@ -6,8 +6,9 @@ import {
   EuiSpacer,
 } from '@elastic/eui';
 import FormPage from './pages/FormPage';
+import MeldFormPage from './pages/MeldFormPage';
 
-function HomePage({ onNavigateToForm }) {
+function HomePage({ onNavigateToForm, onNavigateToMeldForm }) {
   return (
     <EuiPageTemplate>
       <EuiPageTemplate.Header pageTitle="Welcome to EUI Learning" />
@@ -18,11 +19,17 @@ function HomePage({ onNavigateToForm }) {
             Click below to navigate to different pages and explore EUI components.
           </p>
         </EuiText>
-        
+
         <EuiSpacer size="l" />
-        
+
         <EuiButton onClick={onNavigateToForm} fill size="l">
           Go to Sample Form
+        </EuiButton>
+
+        <EuiSpacer size="m" />
+
+        <EuiButton onClick={onNavigateToMeldForm} fill size="l">
+          Go to Create Meld Form
         </EuiButton>
       </EuiPageTemplate.Section>
     </EuiPageTemplate>
@@ -32,21 +39,18 @@ function HomePage({ onNavigateToForm }) {
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
 
-  const navigateToForm = () => {
-    setCurrentPage('form');
-  };
-
-  const navigateHome = () => {
-    setCurrentPage('home');
-  };
+  const navigateHome = () => setCurrentPage('home');
 
   return (
     <>
-      {currentPage === 'home' ? (
-        <HomePage onNavigateToForm={navigateToForm} />
-      ) : (
-        <FormPage onNavigateHome={navigateHome} />
+      {currentPage === 'home' && (
+        <HomePage
+          onNavigateToForm={() => setCurrentPage('form')}
+          onNavigateToMeldForm={() => setCurrentPage('meld-form')}
+        />
       )}
+      {currentPage === 'form' && <FormPage onNavigateHome={navigateHome} />}
+      {currentPage === 'meld-form' && <MeldFormPage onNavigateHome={navigateHome} />}
     </>
   );
 }
