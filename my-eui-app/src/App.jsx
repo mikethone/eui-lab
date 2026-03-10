@@ -7,8 +7,9 @@ import {
 } from '@elastic/eui';
 import FormPage from './pages/FormPage';
 import MeldFormPage from './pages/MeldFormPage';
+import MeldsListPage from './pages/MeldsListPage';
 
-function HomePage({ onNavigateToForm, onNavigateToMeldForm }) {
+function HomePage({ onNavigateToForm, onNavigateToMeldForm, onNavigateToMeldsList }) {
   return (
     <EuiPageTemplate>
       <EuiPageTemplate.Header pageTitle="Welcome to EUI Learning" />
@@ -31,6 +32,12 @@ function HomePage({ onNavigateToForm, onNavigateToMeldForm }) {
         <EuiButton onClick={onNavigateToMeldForm} fill size="l">
           Go to Create Meld Form
         </EuiButton>
+
+        <EuiSpacer size="m" />
+
+        <EuiButton onClick={onNavigateToMeldsList} fill size="l">
+          Go to Melds List
+        </EuiButton>
       </EuiPageTemplate.Section>
     </EuiPageTemplate>
   );
@@ -47,10 +54,17 @@ function App() {
         <HomePage
           onNavigateToForm={() => setCurrentPage('form')}
           onNavigateToMeldForm={() => setCurrentPage('meld-form')}
+          onNavigateToMeldsList={() => setCurrentPage('melds-list')}
         />
       )}
       {currentPage === 'form' && <FormPage onNavigateHome={navigateHome} />}
       {currentPage === 'meld-form' && <MeldFormPage onNavigateHome={navigateHome} />}
+      {currentPage === 'melds-list' && (
+        <MeldsListPage
+          onNavigateHome={navigateHome}
+          onNavigateToMeldForm={() => setCurrentPage('meld-form')}
+        />
+      )}
     </>
   );
 }
