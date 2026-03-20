@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import dateMath from '@elastic/datemath';
+import BackNav from '../components/BackNav';
 import {
   EuiPageTemplate,
   EuiBasicTable,
   EuiBadge,
+  EuiBottomBar,
   EuiButton,
   EuiButtonEmpty,
   EuiButtonGroup,
@@ -12,6 +14,7 @@ import {
   EuiCheckbox,
   EuiDescriptionList,
   EuiFieldSearch,
+  EuiFieldText,
   EuiFilterButton,
   EuiFilterGroup,
   EuiFlexGrid,
@@ -20,6 +23,10 @@ import {
   EuiHorizontalRule,
   EuiIcon,
   EuiLink,
+  EuiListGroup,
+  EuiPopover,
+  EuiPopoverFooter,
+  EuiPopoverTitle,
   EuiSelect,
   EuiSpacer,
   EuiSuperDatePicker,
@@ -184,6 +191,86 @@ const SORT_OPTIONS = [
   { value: 'status_asc',       text: 'Status (A → Z)'         },
 ];
 
+// ─── Filter definitions ───────────────────────────────────────────────────────
+
+// Each definition drives both the FilterPanel UI and the filter logic in useMemo.
+// `field` maps to the actual data key (differs from `id` only for vendorAssigned).
+const FILTER_DEFS = [
+  {
+    id: 'status',
+    field: 'status',
+    label: 'Status',
+    type: 'enum',
+    options: Object.entries(STATUS_CONFIG).map(([v, c]) => ({ value: v, text: c.label })),
+  },
+  {
+    id: 'priority',
+    field: 'priority',
+    label: 'Priority',
+    type: 'enum',
+    options: Object.entries(PRIORITY_CONFIG).map(([v, c]) => ({ value: v, text: c.label })),
+  },
+  {
+    id: 'source',
+    field: 'source',
+    label: 'Source',
+    type: 'enum',
+    options: Object.entries(SOURCE_CONFIG).map(([v, c]) => ({ value: v, text: c.label })),
+  },
+  { id: 'address', field: 'address',        label: 'Address', type: 'text' },
+  { id: 'vendor',  field: 'vendorAssigned', label: 'Vendor',  type: 'text' },
+];
+
+const DEFAULT_FILTERS = Object.fromEntries(
+  FILTER_DEFS.map(({ id }) => [id, { enabled: false, operator: 'includes', value: '' }])
+);
+
+const OPERATOR_OPTIONS = [
+  { value: 'includes', text: 'Includes' },
+  { value: 'excludes', text: 'Excludes' },
+];
+
+// ─── Page presets (saved filter configurations) ───────────────────────────────
+
+const PRESETS = [
+  {
+    id: 'emergency_queue',
+    label: 'Emergency Queue',
+    description: 'High priority melds excluding completed ones',
+    emergencyOnly: true,
+    startDate: 'now-90d',
+    endDate: 'now',
+    filters: {
+      ...DEFAULT_FILTERS,
+      status: { enabled: true, operator: 'excludes', value: 'complete' },
+    },
+  },
+  {
+    id: 'needs_scheduling',
+    label: 'Needs Scheduling',
+    description: 'New melds from the last 30 days',
+    emergencyOnly: false,
+    startDate: 'now-30d',
+    endDate: 'now',
+    filters: {
+      ...DEFAULT_FILTERS,
+      status: { enabled: true, operator: 'includes', value: 'new' },
+    },
+  },
+  {
+    id: 'recurring_maintenance',
+    label: 'Recurring Maintenance',
+    description: 'All melds from recurring schedules',
+    emergencyOnly: false,
+    startDate: 'now-90d',
+    endDate: 'now',
+    filters: {
+      ...DEFAULT_FILTERS,
+      source: { enabled: true, operator: 'includes', value: 'recurring' },
+    },
+  },
+];
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function sortMelds(melds, field, direction) {
@@ -231,6 +318,71 @@ function downloadCSV(melds) {
   URL.revokeObjectURL(url);
 }
 
+// ─── Filter panel (popover contents) ─────────────────────────────────────────
+
+function FilterPanel({ filters, onChange, startDate, endDate, onTimeChange }) {
+  return (
+    <div style={{ width: 380 }}>
+      {FILTER_DEFS.map((def, i) => {
+        const f = filters[def.id];
+        return (
+          <div key={def.id}>
+            {i > 0 && <EuiHorizontalRule margin="xs" />}
+            <EuiCheckbox
+              id={`filter-enable-${def.id}`}
+              label={def.label}
+              checked={f.enabled}
+              onChange={() => onChange(def.id, 'enabled', !f.enabled)}
+            />
+            {f.enabled && (
+              <EuiFlexGroup gutterSize="s" style={{ marginTop: 8 }} responsive={false}>
+                <EuiFlexItem grow={false}>
+                  <EuiSelect
+                    options={OPERATOR_OPTIONS}
+                    value={f.operator}
+                    onChange={(e) => onChange(def.id, 'operator', e.target.value)}
+                    compressed
+                    aria-label={`${def.label} operator`}
+                  />
+                </EuiFlexItem>
+                <EuiFlexItem>
+                  {def.type === 'text' ? (
+                    <EuiFieldText
+                      placeholder={`Enter ${def.label.toLowerCase()}...`}
+                      value={f.value}
+                      onChange={(e) => onChange(def.id, 'value', e.target.value)}
+                      compressed
+                    />
+                  ) : (
+                    <EuiSelect
+                      options={[{ value: '', text: 'Select…' }, ...def.options]}
+                      value={f.value}
+                      onChange={(e) => onChange(def.id, 'value', e.target.value)}
+                      compressed
+                      aria-label={`${def.label} value`}
+                    />
+                  )}
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            )}
+          </div>
+        );
+      })}
+      <EuiHorizontalRule margin="xs" />
+      <EuiText size="xs" color="subdued" style={{ marginBottom: 6 }}>
+        Created date range
+      </EuiText>
+      <EuiSuperDatePicker
+        start={startDate}
+        end={endDate}
+        onTimeChange={onTimeChange}
+        showUpdateButton={false}
+        width="full"
+      />
+    </div>
+  );
+}
+
 // ─── Expanded row (table only) ────────────────────────────────────────────────
 
 function ExpandedRow({ item }) {
@@ -272,6 +424,78 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
   const [sortDirection, setSortDirection] = useState('desc');
   const [tableKey, setTableKey]           = useState(0);
 
+  // ── Presets ──
+
+  const [isPresetOpen, setIsPresetOpen]   = useState(false);
+  const [activePresetId, setActivePresetId] = useState(null);
+
+  const applyPreset = (preset) => {
+    setSearchText('');
+    setEmergencyOnly(preset.emergencyOnly);
+    setStartDate(preset.startDate);
+    setEndDate(preset.endDate);
+    setAppliedFilters(preset.filters);
+    setDraftFilters(preset.filters);
+    setDraftStartDate(preset.startDate);
+    setDraftEndDate(preset.endDate);
+    setActivePresetId(preset.id);
+    setIsPresetOpen(false);
+  };
+
+  const clearPreset = () => {
+    setActivePresetId(null);
+    setSearchText('');
+    setEmergencyOnly(false);
+    clearFilters();
+  };
+
+  // ── Panel filters ──
+  const [isFilterOpen, setIsFilterOpen]     = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
+  const [draftFilters, setDraftFilters]     = useState(DEFAULT_FILTERS);
+  const [draftStartDate, setDraftStartDate] = useState('now-90d');
+  const [draftEndDate, setDraftEndDate]     = useState('now');
+
+  // Count enabled field filters + date range if non-default
+  const DEFAULT_START = 'now-90d';
+  const DEFAULT_END   = 'now';
+  const activeFilterCount =
+    Object.values(appliedFilters).filter((f) => f.enabled && f.value !== '').length +
+    (startDate !== DEFAULT_START || endDate !== DEFAULT_END ? 1 : 0);
+
+  const openFilterPopover = () => {
+    if (!isFilterOpen) {
+      // Only sync draft to committed state when opening
+      setDraftFilters(appliedFilters);
+      setDraftStartDate(startDate);
+      setDraftEndDate(endDate);
+    }
+    setIsFilterOpen((v) => !v);
+  };
+
+  const onFilterChange = (filterId, key, value) => {
+    setDraftFilters((prev) => ({
+      ...prev,
+      [filterId]: { ...prev[filterId], [key]: value },
+    }));
+  };
+
+  const applyFilters = () => {
+    setAppliedFilters(draftFilters);
+    setStartDate(draftStartDate);
+    setEndDate(draftEndDate);
+    setIsFilterOpen(false);
+  };
+
+  const clearFilters = () => {
+    setDraftFilters(DEFAULT_FILTERS);
+    setAppliedFilters(DEFAULT_FILTERS);
+    setDraftStartDate(DEFAULT_START);
+    setDraftEndDate(DEFAULT_END);
+    setStartDate(DEFAULT_START);
+    setEndDate(DEFAULT_END);
+  };
+
   // ── Sort ──
 
   const sortValue = `${sortField}_${sortDirection}`;
@@ -288,13 +512,6 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
       setSortField(sort.field);
       setSortDirection(sort.direction);
     }
-  };
-
-  // ── Filters ──
-
-  const onTimeChange = ({ start, end }) => {
-    setStartDate(start);
-    setEndDate(end);
   };
 
   // ── Row expansion ──
@@ -337,8 +554,24 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
       });
     }
 
+    // Apply panel filters (deferred-commit — only appliedFilters drives data)
+    FILTER_DEFS.forEach(({ id, field, type }) => {
+      const f = appliedFilters[id];
+      if (!f.enabled || f.value === '') return;
+      result = result.filter((m) => {
+        const fieldVal = m[field] ?? '';
+        if (type === 'text') {
+          const matches = String(fieldVal).toLowerCase().includes(f.value.toLowerCase());
+          return f.operator === 'includes' ? matches : !matches;
+        } else {
+          const matches = fieldVal === f.value;
+          return f.operator === 'includes' ? matches : !matches;
+        }
+      });
+    });
+
     return sortMelds(result, sortField, sortDirection);
-  }, [searchText, emergencyOnly, startDate, endDate, sortField, sortDirection]);
+  }, [searchText, emergencyOnly, startDate, endDate, appliedFilters, sortField, sortDirection]);
 
   // ── Table config ──
 
@@ -450,262 +683,370 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <EuiPageTemplate>
-      <EuiPageTemplate.Header
-        pageTitle="Melds List"
-        description="Track and manage maintenance requests across all your properties."
-        rightSideItems={[
-          <EuiButton fill onClick={onNavigateToMeldForm}>
-            Create Meld
-          </EuiButton>,
-          <EuiLink onClick={onNavigateHome}>← Back to Home</EuiLink>,
-        ]}
-      />
+    <>
+      <EuiPageTemplate>
+        <EuiPageTemplate.Header
+          pageTitle="Melds List"
+          description="Track and manage maintenance requests across all your properties."
+          rightSideItems={[
+            <EuiButton fill onClick={onNavigateToMeldForm}>
+              Create Meld
+            </EuiButton>,
+          ]}
+        />
 
-      <EuiPageTemplate.Section>
+        <BackNav onNavigateHome={onNavigateHome} pageTitle="Melds List" />
 
-        {/* ── Toolbar ── */}
-        <EuiFlexGroup alignItems="center" gutterSize="m" wrap>
-
-          <EuiFlexItem style={{ minWidth: 200, maxWidth: 300 }}>
-            <EuiFieldSearch
-              placeholder="Search melds..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              isClearable
-            />
-          </EuiFlexItem>
-
-          {/* Emergency Melds toggle */}
-          <EuiFlexItem grow={false}>
-            <EuiFilterGroup>
-              <EuiFilterButton
-                hasActiveFilters={emergencyOnly}
-                numFilters={MELDS.filter((m) => m.priority === 'high').length}
-                onClick={() => setEmergencyOnly((prev) => !prev)}
+        {/* ── Page presets bar (saved filters) ── */}
+        <EuiPageTemplate.Section grow={false} paddingSize="s" bottomBorder="extended" color="subdued">
+          <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false}>
+            <EuiFlexItem grow={false}>
+              <EuiText size="s" color="subdued">Saved views:</EuiText>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiPopover
+                button={
+                  <EuiButtonEmpty
+                    size="s"
+                    iconType="arrowDown"
+                    iconSide="right"
+                    onClick={() => setIsPresetOpen((v) => !v)}
+                  >
+                    {activePresetId
+                      ? PRESETS.find((p) => p.id === activePresetId)?.label
+                      : 'Choose a preset'}
+                  </EuiButtonEmpty>
+                }
+                isOpen={isPresetOpen}
+                closePopover={() => setIsPresetOpen(false)}
+                panelPaddingSize="none"
+                anchorPosition="downLeft"
               >
-                Emergency Melds
-              </EuiFilterButton>
-            </EuiFilterGroup>
-          </EuiFlexItem>
-
-          <EuiFlexItem grow />
-
-          {/* Sort dropdown — shared with table column sort */}
-          <EuiFlexItem grow={false}>
-            <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
-              <EuiFlexItem grow={false}>
-                <EuiText size="s">Sort:</EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiSelect
-                  options={SORT_OPTIONS}
-                  value={sortValue}
-                  onChange={onSortDropdownChange}
-                  aria-label="Sort melds"
+                <EuiListGroup
+                  flush
+                  listItems={PRESETS.map((preset) => ({
+                    label: preset.label,
+                    size: 's',
+                    isActive: activePresetId === preset.id,
+                    iconType: activePresetId === preset.id ? 'check' : 'empty',
+                    toolTipText: preset.description,
+                    onClick: () => applyPreset(preset),
+                  }))}
                 />
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-
-          <EuiFlexItem grow={false}>
-            <EuiSuperDatePicker
-              start={startDate}
-              end={endDate}
-              onTimeChange={onTimeChange}
-              showUpdateButton={false}
-            />
-          </EuiFlexItem>
-
-          <EuiFlexItem grow={false}>
-            <EuiButtonGroup
-              legend="Toggle table or card view"
-              options={VIEW_OPTIONS}
-              idSelected={view}
-              onChange={(id) => setView(id)}
-              isIconOnly
-            />
-          </EuiFlexItem>
-
-        </EuiFlexGroup>
-
-        {/* ── Bulk actions bar ── */}
-        {selectedItems.length > 0 && (
-          <>
-            <EuiSpacer size="m" />
-            <EuiFlexGroup alignItems="center" gutterSize="m">
+              </EuiPopover>
+            </EuiFlexItem>
+            {activePresetId && (
               <EuiFlexItem grow={false}>
-                <EuiText size="s">
-                  <strong>
-                    {selectedItems.length} meld{selectedItems.length !== 1 ? 's' : ''} selected
-                  </strong>
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiButton size="s" color="success">Mark Complete</EuiButton>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiButton size="s" color="danger">Cancel Melds</EuiButton>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiButtonEmpty size="s" onClick={clearSelection}>
-                  Clear selection
+                <EuiButtonEmpty size="xs" color="text" iconType="cross" onClick={clearPreset}>
+                  Clear
                 </EuiButtonEmpty>
               </EuiFlexItem>
-            </EuiFlexGroup>
-          </>
-        )}
+            )}
+          </EuiFlexGroup>
+        </EuiPageTemplate.Section>
 
-        <EuiSpacer size="m" />
+        <EuiPageTemplate.Section>
 
-        {/* ── Table-level toolbar ── */}
-        <EuiFlexGroup justifyContent="flexEnd">
-          <EuiFlexItem grow={false}>
-            <EuiButtonEmpty
-              iconType="download"
-              onClick={() =>
-                downloadCSV(selectedItems.length > 0 ? selectedItems : filteredMelds)
-              }
-            >
-              {selectedItems.length > 0
-                ? `Download ${selectedItems.length} selected`
-                : 'Download all'}
-            </EuiButtonEmpty>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-
-        <EuiSpacer size="s" />
-
-        {/* ── Table view ── */}
-        {view === 'table' && (
-          <EuiBasicTable
-            key={tableKey}
-            items={filteredMelds}
-            itemId="id"
-            columns={columns}
-            selection={selection}
-            sorting={sorting}
-            onChange={onTableChange}
-            itemIdToExpandedRowMap={expandedRows}
-            rowHeader="ticketName"
-          />
-        )}
-
-        {/* ── Card view ── */}
-        {view === 'cards' && (
-          filteredMelds.length === 0 ? (
-            <EuiText color="subdued" textAlign="center">
-              <p>No melds match the current filters.</p>
-            </EuiText>
-          ) : (
-            <>
-              <EuiCheckbox
-                id="select-all-cards"
-                label="Select all"
-                checked={allCardsSelected}
-                indeterminate={someCardsSelected && !allCardsSelected}
-                onChange={toggleSelectAllCards}
+          {/* ── Toolbar row 1: Text filter | Quick Filter | View Control ── */}
+          <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+            <EuiFlexItem>
+              <EuiFieldSearch
+                placeholder="Search melds..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                isClearable
               />
-              <EuiSpacer size="m" />
-              <EuiFlexGrid columns={3} gutterSize="l">
-              {filteredMelds.map((meld) => {
-                const priorityCfg = PRIORITY_CONFIG[meld.priority];
-                const statusCfg   = STATUS_CONFIG[meld.status];
-                const sourceCfg   = SOURCE_CONFIG[meld.source];
-                return (
-                  <EuiFlexItem key={meld.id}>
-                    <EuiCard
-                      layout="vertical"
-                      title={
-                        <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
-                          <EuiFlexItem grow={false}>
-                            <EuiCheckbox
-                              id={`card-select-${meld.id}`}
-                              checked={isCardSelected(meld)}
-                              onChange={() => toggleCardItem(meld)}
-                              aria-label={`Select ${meld.ticketName}`}
-                            />
-                          </EuiFlexItem>
-                          <EuiFlexItem>{meld.ticketName}</EuiFlexItem>
-                        </EuiFlexGroup>
-                      }
-                      description={<EuiLink href="#">{meld.address}</EuiLink>}
-                      footer={
-                        <EuiFlexGroup
-                          justifyContent="spaceBetween"
-                          alignItems="center"
-                          responsive={false}
-                        >
-                          <EuiFlexItem grow={false}>
-                            <EuiButton
-                              size="s"
-                              fill={meld.meldState === 'finish'}
-                              onClick={() => console.log(meld.meldState, meld.id)}
-                            >
-                              {meld.meldState === 'schedule' ? 'Schedule' : 'Finish Meld'}
-                            </EuiButton>
-                          </EuiFlexItem>
-                          <EuiFlexItem grow={false}>
-                            <EuiBadge color={statusCfg.color}>{statusCfg.label}</EuiBadge>
-                          </EuiFlexItem>
-                        </EuiFlexGroup>
-                      }
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiFilterGroup>
+                <EuiFilterButton
+                  hasActiveFilters={emergencyOnly}
+                  numFilters={MELDS.filter((m) => m.priority === 'high').length}
+                  onClick={() => setEmergencyOnly((prev) => !prev)}
+                >
+                  Emergency Melds
+                </EuiFilterButton>
+              </EuiFilterGroup>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButtonGroup
+                legend="Toggle table or card view"
+                options={VIEW_OPTIONS}
+                idSelected={view}
+                onChange={(id) => setView(id)}
+                isIconOnly
+              />
+            </EuiFlexItem>
+          </EuiFlexGroup>
+
+          <EuiSpacer size="s" />
+
+          {/* ── Toolbar row 2: All Filters | Sort control | Export ── */}
+          <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+            <EuiFlexItem grow={false}>
+              {/* General multi-filter — deferred commit (Apply/Clear pattern).
+                  EUI prefers auto-save in popovers, but explicit commit is more
+                  defensible here given multiple interacting fields. */}
+              <EuiFilterGroup>
+                <EuiPopover
+                  button={
+                    <EuiFilterButton
+                      hasActiveFilters={activeFilterCount > 0}
+                      numActiveFilters={activeFilterCount > 0 ? activeFilterCount : undefined}
+                      iconType="arrowDown"
+                      iconSide="right"
+                      onClick={openFilterPopover}
                     >
-                      {/* Primary metadata */}
-                      <EuiFlexGroup gutterSize="s" alignItems="center" wrap responsive={false}>
-                        <EuiFlexItem grow={false}>
-                          <EuiIcon
-                            type={priorityCfg.icon}
-                            color={priorityCfg.color}
-                            title={priorityCfg.label}
+                      All Filters
+                    </EuiFilterButton>
+                  }
+                  isOpen={isFilterOpen}
+                  closePopover={() => setIsFilterOpen(false)}
+                  panelPaddingSize="s"
+                  anchorPosition="downLeft"
+                >
+                  <EuiPopoverTitle>Filtering Options</EuiPopoverTitle>
+                  <FilterPanel
+                    filters={draftFilters}
+                    onChange={onFilterChange}
+                    startDate={draftStartDate}
+                    endDate={draftEndDate}
+                    onTimeChange={({ start, end }) => {
+                      setDraftStartDate(start);
+                      setDraftEndDate(end);
+                    }}
+                  />
+                  <EuiPopoverFooter>
+                    <EuiFlexGroup justifyContent="spaceBetween" responsive={false}>
+                      <EuiFlexItem grow={false}>
+                        <EuiButtonEmpty size="s" onClick={clearFilters}>
+                          Clear filters
+                        </EuiButtonEmpty>
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false}>
+                        <EuiButton size="s" fill onClick={applyFilters}>
+                          Apply filters
+                        </EuiButton>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  </EuiPopoverFooter>
+                </EuiPopover>
+              </EuiFilterGroup>
+            </EuiFlexItem>
+
+            <EuiFlexItem>
+              <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
+                <EuiFlexItem grow={false}>
+                  <EuiText size="s">Sort:</EuiText>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiSelect
+                    options={SORT_OPTIONS}
+                    value={sortValue}
+                    onChange={onSortDropdownChange}
+                    aria-label="Sort melds"
+                  />
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+
+            <EuiFlexItem grow={false}>
+              <EuiButtonEmpty
+                iconType="download"
+                onClick={() =>
+                  downloadCSV(selectedItems.length > 0 ? selectedItems : filteredMelds)
+                }
+              >
+                {selectedItems.length > 0
+                  ? `Download ${selectedItems.length} selected`
+                  : 'Download all'}
+              </EuiButtonEmpty>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+
+          <EuiSpacer size="m" />
+
+          {/* ── Table view ── */}
+          {view === 'table' && (
+            <EuiBasicTable
+              key={tableKey}
+              items={filteredMelds}
+              itemId="id"
+              columns={columns}
+              selection={selection}
+              sorting={sorting}
+              onChange={onTableChange}
+              itemIdToExpandedRowMap={expandedRows}
+              rowHeader="ticketName"
+            />
+          )}
+
+          {/* ── Card view ── */}
+          {view === 'cards' && (
+            filteredMelds.length === 0 ? (
+              <EuiText color="subdued" textAlign="center">
+                <p>No melds match the current filters.</p>
+              </EuiText>
+            ) : (
+              <>
+                <EuiCheckbox
+                  id="select-all-cards"
+                  label="Select all"
+                  checked={allCardsSelected}
+                  indeterminate={someCardsSelected && !allCardsSelected}
+                  onChange={toggleSelectAllCards}
+                />
+                <EuiSpacer size="m" />
+                <EuiFlexGrid columns={3} gutterSize="l">
+                  {filteredMelds.map((meld) => {
+                    const priorityCfg = PRIORITY_CONFIG[meld.priority];
+                    const statusCfg   = STATUS_CONFIG[meld.status];
+                    const sourceCfg   = SOURCE_CONFIG[meld.source];
+                    return (
+                      <EuiFlexItem key={meld.id}>
+                        <EuiCard
+                          layout="vertical"
+                          title={
+                            <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
+                              <EuiFlexItem grow={false}>
+                                <EuiCheckbox
+                                  id={`card-select-${meld.id}`}
+                                  checked={isCardSelected(meld)}
+                                  onChange={() => toggleCardItem(meld)}
+                                  aria-label={`Select ${meld.ticketName}`}
+                                />
+                              </EuiFlexItem>
+                              <EuiFlexItem>{meld.ticketName}</EuiFlexItem>
+                            </EuiFlexGroup>
+                          }
+                          description={<EuiLink href="#">{meld.address}</EuiLink>}
+                          footer={
+                            <EuiFlexGroup
+                              justifyContent="spaceBetween"
+                              alignItems="center"
+                              responsive={false}
+                            >
+                              <EuiFlexItem grow={false}>
+                                <EuiButton
+                                  size="s"
+                                  fill={meld.meldState === 'finish'}
+                                  onClick={() => console.log(meld.meldState, meld.id)}
+                                >
+                                  {meld.meldState === 'schedule' ? 'Schedule' : 'Finish Meld'}
+                                </EuiButton>
+                              </EuiFlexItem>
+                              <EuiFlexItem grow={false}>
+                                <EuiBadge color={statusCfg.color}>{statusCfg.label}</EuiBadge>
+                              </EuiFlexItem>
+                            </EuiFlexGroup>
+                          }
+                        >
+                          {/* Primary metadata */}
+                          <EuiFlexGroup gutterSize="s" alignItems="center" wrap responsive={false}>
+                            <EuiFlexItem grow={false}>
+                              <EuiIcon
+                                type={priorityCfg.icon}
+                                color={priorityCfg.color}
+                                title={priorityCfg.label}
+                              />
+                            </EuiFlexItem>
+                            <EuiFlexItem grow={false}>
+                              <EuiText size="xs" color="subdued">
+                                {priorityCfg.label} priority
+                              </EuiText>
+                            </EuiFlexItem>
+                            <EuiFlexItem grow={false}>
+                              <EuiIcon type={sourceCfg.icon} size="s" />
+                            </EuiFlexItem>
+                            <EuiFlexItem grow={false}>
+                              <EuiText size="xs" color="subdued">{sourceCfg.label}</EuiText>
+                            </EuiFlexItem>
+                          </EuiFlexGroup>
+
+                          <EuiHorizontalRule margin="s" />
+
+                          {/* Secondary metadata */}
+                          <EuiDescriptionList
+                            type="column"
+                            compressed
+                            columnWidths={[1, 1]}
+                            listItems={[
+                              { title: 'Ref ID',    description: meld.referenceId          },
+                              {
+                                title: 'Tenants',
+                                description: (
+                                  <EuiFlexGroup gutterSize="xs" alignItems="center" responsive={false}>
+                                    <EuiFlexItem grow={false}><EuiIcon type="user" size="s" /></EuiFlexItem>
+                                    <EuiFlexItem grow={false}>{meld.tenantCount}</EuiFlexItem>
+                                  </EuiFlexGroup>
+                                ),
+                              },
+                              { title: 'Vendor',    description: meld.vendorAssigned ?? '—' },
+                              { title: 'Created',   description: meld.createdDate            },
+                              { title: 'Scheduled', description: meld.scheduledDate ?? '—'   },
+                            ]}
                           />
-                        </EuiFlexItem>
-                        <EuiFlexItem grow={false}>
-                          <EuiText size="xs" color="subdued">
-                            {priorityCfg.label} priority
-                          </EuiText>
-                        </EuiFlexItem>
-                        <EuiFlexItem grow={false}>
-                          <EuiIcon type={sourceCfg.icon} size="s" />
-                        </EuiFlexItem>
-                        <EuiFlexItem grow={false}>
-                          <EuiText size="xs" color="subdued">{sourceCfg.label}</EuiText>
-                        </EuiFlexItem>
-                      </EuiFlexGroup>
+                        </EuiCard>
+                      </EuiFlexItem>
+                    );
+                  })}
+                </EuiFlexGrid>
+              </>
+            )
+          )}
 
-                      <EuiHorizontalRule margin="s" />
+        </EuiPageTemplate.Section>
+      </EuiPageTemplate>
 
-                      {/* Secondary metadata */}
-                      <EuiDescriptionList
-                        type="column"
-                        compressed
-                        columnWidths={[1, 1]}
-                        listItems={[
-                          { title: 'Ref ID',     description: meld.referenceId         },
-                          {
-                            title: 'Tenants',
-                            description: (
-                              <EuiFlexGroup gutterSize="xs" alignItems="center" responsive={false}>
-                                <EuiFlexItem grow={false}><EuiIcon type="user" size="s" /></EuiFlexItem>
-                                <EuiFlexItem grow={false}>{meld.tenantCount}</EuiFlexItem>
-                              </EuiFlexGroup>
-                            ),
-                          },
-                          { title: 'Vendor',     description: meld.vendorAssigned ?? '—' },
-                          { title: 'Created',    description: meld.createdDate            },
-                          { title: 'Scheduled',  description: meld.scheduledDate ?? '—'   },
-                        ]}
-                      />
-                    </EuiCard>
+      {/* ── Sticky footer — bulk actions, shown when items are selected ── */}
+      {selectedItems.length > 0 && (
+        <EuiBottomBar position="sticky" paddingSize="m">
+          <EuiFlexGroup alignItems="center" justifyContent="spaceBetween" responsive={false}>
+            <EuiFlexItem grow={false}>
+              <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+                <EuiFlexItem grow={false}>
+                  <EuiCheckbox
+                    id="footer-select-all"
+                    checked={allCardsSelected}
+                    indeterminate={someCardsSelected && !allCardsSelected}
+                    onChange={toggleSelectAllCards}
+                    aria-label="Select or deselect all visible melds"
+                  />
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiText size="s" color="ghost">
+                    <strong>
+                      {selectedItems.length} meld{selectedItems.length !== 1 ? 's' : ''} selected
+                    </strong>
+                  </EuiText>
+                </EuiFlexItem>
+                {!allCardsSelected && (
+                  <EuiFlexItem grow={false}>
+                    <EuiLink color="ghost" onClick={() => setSelectedItems(filteredMelds)}>
+                      Select all {filteredMelds.length} melds
+                    </EuiLink>
                   </EuiFlexItem>
-                );
-              })}
-              </EuiFlexGrid>
-            </>
-          )
-        )}
-
-      </EuiPageTemplate.Section>
-    </EuiPageTemplate>
+                )}
+              </EuiFlexGroup>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
+                <EuiFlexItem grow={false}>
+                  <EuiButton size="s" color="success">Mark Complete</EuiButton>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiButton size="s" color="danger">Cancel Melds</EuiButton>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiButtonEmpty size="s" color="ghost" onClick={clearSelection}>
+                    Clear selection
+                  </EuiButtonEmpty>
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiBottomBar>
+      )}
+    </>
   );
 }
