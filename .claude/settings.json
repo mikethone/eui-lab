@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui -name *.d.ts -path *provider*)",
+      "Bash(find /Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-common -name *.d.ts)"
+    ]
+  }
+}

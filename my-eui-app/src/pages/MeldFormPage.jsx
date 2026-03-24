@@ -220,11 +220,13 @@ export default function MeldFormPage({ onNavigateHome }) {
                 </>
               }
             >
-              <EuiCallOut title="Owners" color="primary" size="s">
-                <ul>
-                  <li>Dione Hya - Hub Access</li>
-                </ul>
-              </EuiCallOut>
+              {ownerVisible && (
+                <EuiCallOut title="Owners" color="primary" size="s">
+                  <ul>
+                    <li>Dione Hya - Hub Access</li>
+                  </ul>
+                </EuiCallOut>
+              )}
             </EuiDescribedFormGroup>
 
             {/* Section 4: Animals present */}
@@ -238,15 +240,17 @@ export default function MeldFormPage({ onNavigateHome }) {
                 />
               }
             >
-              <EuiFormRow
-                label="What kinds of animals"
-                helpText="e.g. 2 dogs, cats who might escape, etc."
-              >
-                <EuiFieldText
-                  value={animalTypes}
-                  onChange={(e) => setAnimalTypes(e.target.value)}
-                />
-              </EuiFormRow>
+              {animalsPresent && (
+                <EuiFormRow
+                  label="What kinds of animals"
+                  helpText="e.g. 2 dogs, cats who might escape, etc."
+                >
+                  <EuiFieldText
+                    value={animalTypes}
+                    onChange={(e) => setAnimalTypes(e.target.value)}
+                  />
+                </EuiFormRow>
+              )}
             </EuiDescribedFormGroup>
 
             {/* Section 5: Recurring Meld */}
@@ -260,45 +264,49 @@ export default function MeldFormPage({ onNavigateHome }) {
                 />
               }
             >
-              <EuiFlexGroup gutterSize="m">
-                <EuiFlexItem>
-                  <EuiFormRow label="Repeats every">
-                    <EuiFieldNumber
-                      placeholder="# of"
-                      value={repeatEvery}
-                      onChange={(e) => setRepeatEvery(e.target.value)}
-                    />
-                  </EuiFormRow>
-                </EuiFlexItem>
-                <EuiFlexItem>
-                  <EuiFormRow label=" " hasEmptyLabelSpace>
-                    <EuiSelect
-                      options={repeatUnitOptions}
-                      value={repeatUnit}
-                      onChange={(e) => setRepeatUnit(e.target.value)}
-                    />
-                  </EuiFormRow>
-                </EuiFlexItem>
-              </EuiFlexGroup>
-              <EuiSpacer size="m" />
-              <EuiFlexGroup gutterSize="m">
-                <EuiFlexItem>
-                  <EuiFormRow label="Start date">
-                    <EuiDatePicker
-                      selected={startDate}
-                      onChange={setStartDate}
-                    />
-                  </EuiFormRow>
-                </EuiFlexItem>
-                <EuiFlexItem>
-                  <EuiFormRow label="End date (optional)">
-                    <EuiDatePicker
-                      selected={endDate}
-                      onChange={setEndDate}
-                    />
-                  </EuiFormRow>
-                </EuiFlexItem>
-              </EuiFlexGroup>
+              {isRecurring && (
+                <>
+                  <EuiFlexGroup gutterSize="m">
+                    <EuiFlexItem>
+                      <EuiFormRow label="Repeats every">
+                        <EuiFieldNumber
+                          placeholder="# of"
+                          value={repeatEvery}
+                          onChange={(e) => setRepeatEvery(e.target.value)}
+                        />
+                      </EuiFormRow>
+                    </EuiFlexItem>
+                    <EuiFlexItem>
+                      <EuiFormRow label="Interval">
+                        <EuiSelect
+                          options={repeatUnitOptions}
+                          value={repeatUnit}
+                          onChange={(e) => setRepeatUnit(e.target.value)}
+                        />
+                      </EuiFormRow>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
+                  <EuiSpacer size="m" />
+                  <EuiFlexGroup gutterSize="m">
+                    <EuiFlexItem>
+                      <EuiFormRow label="Start date">
+                        <EuiDatePicker
+                          selected={startDate}
+                          onChange={setStartDate}
+                        />
+                      </EuiFormRow>
+                    </EuiFlexItem>
+                    <EuiFlexItem>
+                      <EuiFormRow label="End date (optional)">
+                        <EuiDatePicker
+                          selected={endDate}
+                          onChange={setEndDate}
+                        />
+                      </EuiFormRow>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
+                </>
+              )}
             </EuiDescribedFormGroup>
 
             {/* Section 6: Maintenance and Tags */}
