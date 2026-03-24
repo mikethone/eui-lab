@@ -152,13 +152,28 @@ export const fontWeights = {
 export const pmTheme = {
   font: {
     family: '"Open Sans", Helvetica, Roboto, Arial, sans-serif',
+    // Reduce the xl heading multiplier from Borealis default (~1.75) to 1.5
+    // so large page titles don't overpower the layout.
+    scale: {
+      xl: 1.5,
+    },
+    // Pin body text to the "m" scale key.
+    body: {
+      scale: 'm',
+    },
   },
   colors: {
     LIGHT: {
+      // Page background
+      body:       colors.brand.white,
+      // Dividers, table row backgrounds, subtle hover states
+      lightShade: colors.neutrals.gray200,
+
       // Semantic root
       primary: colors.brand.meldBlue,
 
       // Borealis component tokens — primary
+      // (setting `primary` alone doesn't reach these in Borealis)
       backgroundFilledPrimary:  colors.brand.meldBlue,
       backgroundBasePrimary:    colors.brand.veryLightBlue,
       backgroundLightPrimary:   colors.brand.veryLightBlue,
@@ -181,6 +196,16 @@ export const pmTheme = {
       success: colors.interface.green.default,
       danger:  colors.interface.red.default,
       warning: colors.interface.yellow.default,
+    },
+  },
+  border: {
+    // Lighter dividers than Borealis default — note this uses gray200, which
+    // is intentionally softer than the gray400 used for custom PM component
+    // borders (BorderColor export above).
+    thin:   `1px solid ${colors.neutrals.gray200}`,
+    radius: {
+      // Matches the BorderRadius constant — rounds inputs, cards, small surfaces.
+      small: '6px',
     },
   },
 };
