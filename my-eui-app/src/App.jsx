@@ -9,6 +9,7 @@ import {
 import FormPage from './pages/FormPage';
 import MeldFormPage from './pages/MeldFormPage';
 import MeldsListPage from './pages/MeldsListPage';
+import TokensPage from './pages/TokensPage';
 
 const PAGES = [
   {
@@ -28,6 +29,12 @@ const PAGES = [
     title: 'Melds List',
     description: 'Browse, filter, sort, and manage maintenance requests across all properties.',
     icon: 'tableDensityNormal',
+  },
+  {
+    id: 'tokens',
+    title: 'Design Tokens',
+    description: 'PM color, typography, and button tokens mapped to the EUI theme.',
+    icon: 'layers',
   },
 ];
 
@@ -75,6 +82,7 @@ function App() {
           onNavigateToMeldForm={() => setCurrentPage('meld-form')}
         />
       )}
+      {currentPage === 'tokens' && <TokensPage onNavigateHome={navigateHome} />}
     </>
   );
 }
