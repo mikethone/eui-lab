@@ -16,6 +16,7 @@ import {
   priorityColors,
   badgeColors,
 } from '../theme/tokens';
+import { meldBlue, shade } from '../theme/euiTheme';
 import BackNav from '../components/BackNav';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -122,17 +123,16 @@ export default function TokensPage({ onNavigateHome }) {
           description="PM color tokens mapped to EUI Borealis semantic slots — blue ramp, shade ramp, semantic states, priority, and badge palettes."
         />
 
-        <SubHeading title="Primary Blue" />
+        <SubHeading title="Meld Blue Ramp" />
         <EuiFlexGroup gutterSize="m" wrap responsive={false}>
           {[
-            { name: 'backgroundBasePrimary',                hex: '#E6F2FF' },
-            { name: 'backgroundBaseInteractiveSelect',      hex: '#E6F2FF' },
-            { name: 'highlight',                            hex: '#E6F2FF' },
-            { name: 'backgroundLightPrimary',               hex: '#CCE5FF' },
-            { name: 'backgroundBaseInteractiveSelectHover', hex: '#CCE5FF' },
-            { name: 'borderBasePrimary',                    hex: '#99CBFF' },
-            { name: 'primary / backgroundFilledPrimary / borderStrongPrimary', hex: '#1175CC' },
-            { name: 'textPrimary / link',                   hex: '#0B4980' },
+            { name: 'emptyBlue',    hex: meldBlue.emptyBlue },
+            { name: 'lightestBlue', hex: meldBlue.lightestBlue },
+            { name: 'lightBlue',    hex: meldBlue.lightBlue },
+            { name: 'mediumBlue',   hex: meldBlue.mediumBlue },
+            { name: 'darkBlue',     hex: meldBlue.darkBlue },
+            { name: 'darkestBlue',  hex: meldBlue.darkestBlue },
+            { name: 'fullBlue',     hex: meldBlue.fullBlue },
           ].map(({ name, hex }) => (
             <EuiFlexItem key={name} grow={false}>
               <ColorSwatch name={name} hex={hex} />
@@ -144,15 +144,7 @@ export default function TokensPage({ onNavigateHome }) {
 
         <SubHeading title="Shade Ramp (Neutrals)" />
         <EuiFlexGroup gutterSize="m" wrap responsive={false}>
-          {[
-            { name: 'emptyShade',    hex: '#FCFCFC' },
-            { name: 'lightestShade', hex: '#F7F9FA' },
-            { name: 'lightShade',    hex: '#EBEFF2' },
-            { name: 'mediumShade',   hex: '#AEB6BD' },
-            { name: 'darkShade',     hex: '#6B757D' },
-            { name: 'darkestShade',  hex: '#343A40' },
-            { name: 'fullShade',     hex: '#0C0D0D' },
-          ].map(({ name, hex }) => (
+          {Object.entries(shade).map(([name, hex]) => (
             <EuiFlexItem key={name} grow={false}>
               <ColorSwatch name={name} hex={hex} />
             </EuiFlexItem>
@@ -164,9 +156,9 @@ export default function TokensPage({ onNavigateHome }) {
         <SubHeading title="Semantic States" />
         <EuiFlexGroup gutterSize="m" wrap responsive={false}>
           {[
-            { name: 'success', hex: '#006B56' },
-            { name: 'danger',  hex: '#B2250F' },
-            { name: 'warning', hex: '#FFCE70' },
+            { name: 'success', hex: euiTheme.colors.success },
+            { name: 'danger',  hex: euiTheme.colors.danger },
+            { name: 'warning', hex: euiTheme.colors.warning },
           ].map(({ name, hex }) => (
             <EuiFlexItem key={name} grow={false}>
               <ColorSwatch name={name} hex={hex} />

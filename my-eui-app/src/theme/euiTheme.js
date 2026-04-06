@@ -13,7 +13,7 @@
 
 // ─── Shade ramp — PM neutral grays mapped to Borealis 7-step scale ───────────
 // Borealis defaults have a blue-gray cast; PM uses neutral grays.
-const shade = {
+export const shade = {
   emptyShade:    '#F8FAFB',  // backgroundGray
   lightestShade: '#EBEFF2',  // gray200
   lightShade:    '#CCD3D9',  // gray400
@@ -21,6 +21,19 @@ const shade = {
   darkShade:     '#6B757D',  // gray600
   darkestShade:  '#343A40',  // gray800
   fullShade:     '#0C0D0D',  // gray900
+};
+
+// ─── Meld Blue ramp — 7-step primary blue scale ───────────────────────────────
+// Parallels the shade scale structure. Steps without an existing PM value are
+// interpolated between their neighbors and marked // invented.
+export const meldBlue = {
+  emptyBlue:    '#E6F2FF',  // backgroundBasePrimary
+  lightestBlue: '#CCE5FF',  // backgroundLightPrimary
+  lightBlue:    '#99CBFF',  // borderBasePrimary
+  mediumBlue:   '#6CAEEE',  // invented
+  darkBlue:     '#3F91DD',  // invented
+  darkestBlue:  '#1175CC',  // primary / backgroundFilledPrimary
+  fullBlue:     '#0B4980',  // textPrimary / link
 };
 
 export const pmTheme = {
@@ -41,18 +54,18 @@ export const pmTheme = {
       textSubdued:   shade.darkShade,
 
       // ── Primary blue ──────────────────────────────────────────────────
-      primary:                              '#1175CC',
-      backgroundBasePrimary:                '#E6F2FF',
-      backgroundBaseInteractiveSelect:      '#E6F2FF',
-      highlight:                            '#E6F2FF',
-      backgroundLightPrimary:               '#CCE5FF',
-      backgroundBaseInteractiveSelectHover: '#CCE5FF',
-      borderBasePrimary:                    '#99CBFF',
-      backgroundFilledPrimary:              '#1175CC',
-      borderStrongPrimary:                  '#1175CC',
-      textPrimary:                          '#0B4980',
-      link:                                 '#0B4980',
-      backgroundBaseInteractiveHover:       'rgba(11, 73, 128, 0.04)',
+      primary:                              meldBlue.darkestBlue,
+      backgroundBasePrimary:                meldBlue.emptyBlue,
+      backgroundBaseInteractiveSelect:      meldBlue.emptyBlue,
+      highlight:                            meldBlue.emptyBlue,
+      backgroundLightPrimary:               meldBlue.lightestBlue,
+      backgroundBaseInteractiveSelectHover: meldBlue.lightestBlue,
+      borderBasePrimary:                    meldBlue.lightBlue,
+      backgroundFilledPrimary:              meldBlue.darkestBlue,
+      borderStrongPrimary:                  meldBlue.darkestBlue,
+      textPrimary:                          meldBlue.fullBlue,
+      link:                                 meldBlue.fullBlue,
+      backgroundBaseInteractiveHover:       'rgba(11, 73, 128, 0.04)',  // fullBlue @ 4%
 
       // ── Semantic states ───────────────────────────────────────────────
       success: '#006B56',
@@ -63,11 +76,11 @@ export const pmTheme = {
     // DARK — minimal overrides; Borealis dark defaults are acceptable
     // for most tokens. Extend here if specific dark values are needed.
     DARK: {
-      primary:                '#1175CC',
-      backgroundFilledPrimary:'#1175CC',
-      borderStrongPrimary:    '#1175CC',
-      textPrimary:            '#0B4980',
-      link:                   '#0B4980',
+      primary:                meldBlue.darkestBlue,
+      backgroundFilledPrimary:meldBlue.darkestBlue,
+      borderStrongPrimary:    meldBlue.darkestBlue,
+      textPrimary:            meldBlue.fullBlue,
+      link:                   meldBlue.fullBlue,
       success: '#006B56',
       danger:  '#B2250F',
       warning: '#FFCE70',
