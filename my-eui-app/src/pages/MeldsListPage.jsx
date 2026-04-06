@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import dateMath from '@elastic/datemath';
-import BackNav from '../components/BackNav';
 import {
   EuiPageTemplate,
   EuiBasicTable,
@@ -688,14 +687,21 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
         <EuiPageTemplate.Header
           pageTitle="Melds List"
           description="Track and manage maintenance requests across all your properties."
+          breadcrumbs={[
+            {
+              text: (
+                <EuiLink onClick={onNavigateHome}>
+                  <EuiIcon type="arrowLeft" size="s" /> Home
+                </EuiLink>
+              ),
+            },
+          ]}
           rightSideItems={[
             <EuiButton fill onClick={onNavigateToMeldForm}>
               Create Meld
             </EuiButton>,
           ]}
         />
-
-        <BackNav onNavigateHome={onNavigateHome} pageTitle="Melds List" />
 
         {/* ── Page presets bar (saved filters) ── */}
         <EuiPageTemplate.Section grow={false} paddingSize="s" bottomBorder="extended" color="subdued">
