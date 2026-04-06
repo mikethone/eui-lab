@@ -7,8 +7,8 @@ import {
   EuiIcon,
 } from '@elastic/eui';
 import FormPage from './pages/FormPage';
-import MeldFormPage from './pages/MeldFormPage';
-import MeldsListPage from './pages/MeldsListPage';
+import IssueFormPage from './pages/IssueFormPage';
+import IssuesListPage from './pages/IssuesListPage';
 import TokensPage from './pages/TokensPage';
 
 const PAGES = [
@@ -19,15 +19,15 @@ const PAGES = [
     icon: 'documents',
   },
   {
-    id: 'meld-form',
-    title: 'Create Meld',
+    id: 'issue-form',
+    title: 'Create Issue',
     description: 'Submit a new maintenance request with location, priority, scheduling, and vendor details.',
     icon: 'wrench',
   },
   {
-    id: 'melds-list',
-    title: 'Melds List',
-    description: 'Browse, filter, sort, and manage maintenance requests across all properties.',
+    id: 'issues-list',
+    title: 'Issues List',
+    description: 'Browse, filter, sort, and manage issues across all properties.',
     icon: 'tableDensityNormal',
   },
   {
@@ -75,11 +75,11 @@ function App() {
         <HomePage onNavigate={(id) => setCurrentPage(id)} />
       )}
       {currentPage === 'form' && <FormPage onNavigateHome={navigateHome} />}
-      {currentPage === 'meld-form' && <MeldFormPage onNavigateHome={navigateHome} />}
-      {currentPage === 'melds-list' && (
-        <MeldsListPage
+      {currentPage === 'issue-form' && <IssueFormPage onNavigateHome={navigateHome} />}
+      {currentPage === 'issues-list' && (
+        <IssuesListPage
           onNavigateHome={navigateHome}
-          onNavigateToMeldForm={() => setCurrentPage('meld-form')}
+          onNavigateToIssueForm={() => setCurrentPage('issue-form')}
         />
       )}
       {currentPage === 'tokens' && <TokensPage onNavigateHome={navigateHome} />}

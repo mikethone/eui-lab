@@ -15,6 +15,7 @@ import {
   EuiSpacer,
   EuiPanel,
   EuiLink,
+  EuiIcon,
 } from '@elastic/eui';
 
 export default function FormPage({ onNavigateHome }) {
@@ -88,10 +89,12 @@ export default function FormPage({ onNavigateHome }) {
 
   return (
     <EuiPageTemplate>
-      <EuiPageTemplate.Header 
+      <EuiPageTemplate.Header
         pageTitle="Sample Form"
-        rightSideItems={[
-          <EuiLink onClick={onNavigateHome}>← Back to Home</EuiLink>
+        breadcrumbs={[
+          {
+            text: <EuiLink onClick={onNavigateHome}><EuiIcon type="arrowLeft" size="s" /> Home</EuiLink>,
+          },
         ]}
       />
       <EuiPageTemplate.Section>

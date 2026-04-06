@@ -26,7 +26,7 @@ export const shade = {
 // ─── Meld Blue ramp — 7-step primary blue scale ───────────────────────────────
 // Parallels the shade scale structure. Steps without an existing PM value are
 // interpolated between their neighbors and marked // invented.
-export const meldBlue = {
+export const issueBlue = {
   emptyBlue:    '#E6F2FF',  // backgroundBasePrimary
   lightestBlue: '#CCE5FF',  // backgroundLightPrimary
   lightBlue:    '#99CBFF',  // borderBasePrimary
@@ -54,17 +54,17 @@ export const pmTheme = {
       textSubdued:   shade.darkShade,
 
       // ── Primary blue ──────────────────────────────────────────────────
-      primary:                              meldBlue.darkestBlue,
-      backgroundBasePrimary:                meldBlue.emptyBlue,
-      backgroundBaseInteractiveSelect:      meldBlue.emptyBlue,
-      highlight:                            meldBlue.emptyBlue,
-      backgroundLightPrimary:               meldBlue.lightestBlue,
-      backgroundBaseInteractiveSelectHover: meldBlue.lightestBlue,
-      borderBasePrimary:                    meldBlue.lightBlue,
-      backgroundFilledPrimary:              meldBlue.darkestBlue,
-      borderStrongPrimary:                  meldBlue.darkestBlue,
-      textPrimary:                          meldBlue.fullBlue,
-      link:                                 meldBlue.fullBlue,
+      primary:                              issueBlue.darkestBlue,
+      backgroundBasePrimary:                issueBlue.emptyBlue,
+      backgroundBaseInteractiveSelect:      issueBlue.emptyBlue,
+      highlight:                            issueBlue.emptyBlue,
+      backgroundLightPrimary:               issueBlue.lightestBlue,
+      backgroundBaseInteractiveSelectHover: issueBlue.lightestBlue,
+      borderBasePrimary:                    issueBlue.lightBlue,
+      backgroundFilledPrimary:              issueBlue.darkestBlue,
+      borderStrongPrimary:                  issueBlue.darkestBlue,
+      textPrimary:                          issueBlue.fullBlue,
+      link:                                 issueBlue.fullBlue,
       backgroundBaseInteractiveHover:       'rgba(11, 73, 128, 0.04)',  // fullBlue @ 4%
 
       // ── Semantic states ───────────────────────────────────────────────
@@ -76,11 +76,11 @@ export const pmTheme = {
     // DARK — minimal overrides; Borealis dark defaults are acceptable
     // for most tokens. Extend here if specific dark values are needed.
     DARK: {
-      primary:                meldBlue.darkestBlue,
-      backgroundFilledPrimary:meldBlue.darkestBlue,
-      borderStrongPrimary:    meldBlue.darkestBlue,
-      textPrimary:            meldBlue.fullBlue,
-      link:                   meldBlue.fullBlue,
+      primary:                issueBlue.darkestBlue,
+      backgroundFilledPrimary:issueBlue.darkestBlue,
+      borderStrongPrimary:    issueBlue.darkestBlue,
+      textPrimary:            issueBlue.fullBlue,
+      link:                   issueBlue.fullBlue,
       success: '#006B56',
       danger:  '#B2250F',
       warning: '#FFCE70',

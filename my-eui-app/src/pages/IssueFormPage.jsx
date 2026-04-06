@@ -21,9 +21,10 @@ import {
   EuiSpacer,
   EuiLink,
   EuiDatePicker,
+  EuiIcon,
 } from '@elastic/eui';
 
-export default function MeldFormPage({ onNavigateHome }) {
+export default function IssueFormPage({ onNavigateHome }) {
   const [locationType, setLocationType] = useState('unit');
   const [unit, setUnit] = useState([]);
   const [moreLocationInfo, setMoreLocationInfo] = useState('');
@@ -107,15 +108,17 @@ export default function MeldFormPage({ onNavigateHome }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Create Meld submitted');
+    console.log('Create Issue submitted');
   };
 
   return (
     <EuiPageTemplate>
       <EuiPageTemplate.Header
-        pageTitle="Create Meld"
-        rightSideItems={[
-          <EuiLink onClick={onNavigateHome}>← Back to Home</EuiLink>,
+        pageTitle="Create Issue"
+        breadcrumbs={[
+          {
+            text: <EuiLink onClick={onNavigateHome}><EuiIcon type="arrowLeft" size="s" /> Home</EuiLink>,
+          },
         ]}
       />
       <EuiPageTemplate.Section>
@@ -127,7 +130,7 @@ export default function MeldFormPage({ onNavigateHome }) {
               title={<h3>Location</h3>}
               description={<p>Where is the issue?</p>}
             >
-              <EuiFormRow label="Meld Location Type">
+              <EuiFormRow label="Issue Location Type">
                 <EuiRadioGroup
                   options={locationTypeOptions}
                   idSelected={locationType}
@@ -253,9 +256,9 @@ export default function MeldFormPage({ onNavigateHome }) {
               )}
             </EuiDescribedFormGroup>
 
-            {/* Section 5: Recurring Meld */}
+            {/* Section 5: Recurring Issue */}
             <EuiDescribedFormGroup
-              title={<h3>Recurring Meld</h3>}
+              title={<h3>Recurring Issue</h3>}
               description={
                 <EuiSwitch
                   label="Yes"
@@ -313,7 +316,7 @@ export default function MeldFormPage({ onNavigateHome }) {
             <EuiDescribedFormGroup
               title={<h3>Maintenance and Tags</h3>}
               description={
-                <p>Add more information to help you track the meld.</p>
+                <p>Add more information to help you track the issue.</p>
               }
             >
               <EuiFormRow label="Maintenance (optional)">
@@ -377,7 +380,7 @@ export default function MeldFormPage({ onNavigateHome }) {
             <EuiFlexGroup gutterSize="m">
               <EuiFlexItem grow={false}>
                 <EuiButton type="submit" fill>
-                  Create Meld
+                  Create Issue
                 </EuiButton>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>

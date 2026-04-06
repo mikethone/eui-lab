@@ -11,13 +11,14 @@ import {
   EuiButtonEmpty,
   EuiPanel,
   EuiCode,
+  EuiIcon,
+  EuiLink,
 } from '@elastic/eui';
 import {
   priorityColors,
   badgeColors,
 } from '../theme/tokens';
-import { meldBlue, shade } from '../theme/euiTheme';
-import BackNav from '../components/BackNav';
+import { issueBlue, shade } from '../theme/euiTheme';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -110,10 +111,14 @@ export default function TokensPage({ onNavigateHome }) {
 
   return (
     <EuiPageTemplate>
-      <BackNav onNavigateHome={onNavigateHome} pageTitle="Design Tokens" />
       <EuiPageTemplate.Header
         pageTitle="Design Tokens"
         description="PM design system tokens and their mapping to EUI theme overrides."
+        breadcrumbs={[
+          {
+            text: <EuiLink onClick={onNavigateHome}><EuiIcon type="arrowLeft" size="s" /> Home</EuiLink>,
+          },
+        ]}
       />
       <EuiPageTemplate.Section>
 
@@ -123,16 +128,16 @@ export default function TokensPage({ onNavigateHome }) {
           description="PM color tokens mapped to EUI Borealis semantic slots — blue ramp, shade ramp, semantic states, priority, and badge palettes."
         />
 
-        <SubHeading title="Meld Blue Ramp" />
+        <SubHeading title="Issue Blue Ramp" />
         <EuiFlexGroup gutterSize="m" wrap responsive={false}>
           {[
-            { name: 'emptyBlue',    hex: meldBlue.emptyBlue },
-            { name: 'lightestBlue', hex: meldBlue.lightestBlue },
-            { name: 'lightBlue',    hex: meldBlue.lightBlue },
-            { name: 'mediumBlue',   hex: meldBlue.mediumBlue },
-            { name: 'darkBlue',     hex: meldBlue.darkBlue },
-            { name: 'darkestBlue',  hex: meldBlue.darkestBlue },
-            { name: 'fullBlue',     hex: meldBlue.fullBlue },
+            { name: 'emptyBlue',    hex: issueBlue.emptyBlue },
+            { name: 'lightestBlue', hex: issueBlue.lightestBlue },
+            { name: 'lightBlue',    hex: issueBlue.lightBlue },
+            { name: 'mediumBlue',   hex: issueBlue.mediumBlue },
+            { name: 'darkBlue',     hex: issueBlue.darkBlue },
+            { name: 'darkestBlue',  hex: issueBlue.darkestBlue },
+            { name: 'fullBlue',     hex: issueBlue.fullBlue },
           ].map(({ name, hex }) => (
             <EuiFlexItem key={name} grow={false}>
               <ColorSwatch name={name} hex={hex} />

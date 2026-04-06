@@ -34,7 +34,7 @@ import {
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
-const MELDS = [
+const ISSUES = [
   {
     id: '1',
     priority: 'high',
@@ -42,7 +42,7 @@ const MELDS = [
     address: '123 Main St, Unit 1A',
     status: 'scheduled',
     source: 'recurring',
-    meldState: 'finish',
+    issueState: 'finish',
     tenantCount: 2,
     referenceId: 'AB123456',
     vendorAssigned: 'Bob Plumbing Co.',
@@ -56,7 +56,7 @@ const MELDS = [
     address: '456 Oak Ave, Unit 3B',
     status: 'new',
     source: 'agent',
-    meldState: 'schedule',
+    issueState: 'schedule',
     tenantCount: 1,
     referenceId: 'CD789012',
     vendorAssigned: null,
@@ -70,7 +70,7 @@ const MELDS = [
     address: '789 Pine Rd, Unit 2C',
     status: 'complete',
     source: 'max_digital',
-    meldState: 'finish',
+    issueState: 'finish',
     tenantCount: 3,
     referenceId: 'EF345678',
     vendorAssigned: 'Handyman Pro',
@@ -84,7 +84,7 @@ const MELDS = [
     address: '321 Elm St, Unit 4D',
     status: 'in_progress',
     source: 'agent',
-    meldState: 'finish',
+    issueState: 'finish',
     tenantCount: 2,
     referenceId: 'GH901234',
     vendorAssigned: 'Window Experts LLC',
@@ -98,7 +98,7 @@ const MELDS = [
     address: '654 Maple Ave, Unit 1B',
     status: 'new',
     source: 'max_digital',
-    meldState: 'schedule',
+    issueState: 'schedule',
     tenantCount: 1,
     referenceId: 'IJ567890',
     vendorAssigned: null,
@@ -112,7 +112,7 @@ const MELDS = [
     address: '987 Cedar Blvd, Unit 5A',
     status: 'cancelled',
     source: 'recurring',
-    meldState: 'schedule',
+    issueState: 'schedule',
     tenantCount: 0,
     referenceId: 'KL123456',
     vendorAssigned: null,
@@ -126,7 +126,7 @@ const MELDS = [
     address: '147 Birch Ln, Unit 2A',
     status: 'scheduled',
     source: 'agent',
-    meldState: 'finish',
+    issueState: 'finish',
     tenantCount: 4,
     referenceId: 'MN789012',
     vendorAssigned: 'Quick Plumbing Inc.',
@@ -140,7 +140,7 @@ const MELDS = [
     address: '258 Walnut St, Unit 3A',
     status: 'in_progress',
     source: 'max_digital',
-    meldState: 'finish',
+    issueState: 'finish',
     tenantCount: 2,
     referenceId: 'OP345678',
     vendorAssigned: 'CleanRight Services',
@@ -235,7 +235,7 @@ const PRESETS = [
   {
     id: 'emergency_queue',
     label: 'Emergency Queue',
-    description: 'High priority melds excluding completed ones',
+    description: 'High priority issues excluding completed ones',
     emergencyOnly: true,
     startDate: 'now-90d',
     endDate: 'now',
@@ -247,7 +247,7 @@ const PRESETS = [
   {
     id: 'needs_scheduling',
     label: 'Needs Scheduling',
-    description: 'New melds from the last 30 days',
+    description: 'New issues from the last 30 days',
     emergencyOnly: false,
     startDate: 'now-30d',
     endDate: 'now',
@@ -259,7 +259,7 @@ const PRESETS = [
   {
     id: 'recurring_maintenance',
     label: 'Recurring Maintenance',
-    description: 'All melds from recurring schedules',
+    description: 'All issues from recurring schedules',
     emergencyOnly: false,
     startDate: 'now-90d',
     endDate: 'now',
@@ -272,8 +272,8 @@ const PRESETS = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function sortMelds(melds, field, direction) {
-  return [...melds].sort((a, b) => {
+function sortIssues(issues, field, direction) {
+  return [...issues].sort((a, b) => {
     let aVal, bVal;
     if (field === 'priority') {
       aVal = PRIORITY_ORDER[a.priority] ?? 0;
@@ -288,12 +288,12 @@ function sortMelds(melds, field, direction) {
   });
 }
 
-function downloadCSV(melds) {
+function downloadCSV(issues) {
   const headers = [
     'Priority', 'Ticket', 'Address', 'Status', 'Source',
     'Reference ID', 'Tenants', 'Vendor', 'Created', 'Scheduled',
   ];
-  const rows = melds.map((m) => [
+  const rows = issues.map((m) => [
     PRIORITY_CONFIG[m.priority].label,
     m.ticketName,
     m.address,
@@ -312,7 +312,7 @@ function downloadCSV(melds) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'melds.csv';
+  a.download = 'issues.csv';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -411,7 +411,7 @@ function ExpandedRow({ item }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) {
+export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }) {
   const [view, setView]                   = useState('table');
   const [searchText, setSearchText]       = useState('');
   const [emergencyOnly, setEmergencyOnly] = useState(false);
@@ -529,8 +529,8 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
 
   // ── Derived data ──
 
-  const filteredMelds = useMemo(() => {
-    let result = [...MELDS];
+  const filteredIssues = useMemo(() => {
+    let result = [...ISSUES];
 
     if (searchText) {
       const lower = searchText.toLowerCase();
@@ -569,7 +569,7 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
       });
     });
 
-    return sortMelds(result, sortField, sortDirection);
+    return sortIssues(result, sortField, sortDirection);
   }, [searchText, emergencyOnly, startDate, endDate, appliedFilters, sortField, sortDirection]);
 
   // ── Table config ──
@@ -625,10 +625,10 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
       render: (item) => (
         <EuiButton
           size="s"
-          fill={item.meldState === 'finish'}
-          onClick={() => console.log(item.meldState, item.id)}
+          fill={item.issueState === 'finish'}
+          onClick={() => console.log(item.issueState, item.id)}
         >
-          {item.meldState === 'schedule' ? 'Schedule' : 'Finish Meld'}
+          {item.issueState === 'schedule' ? 'Schedule' : 'Finish Issue'}
         </EuiButton>
       ),
     },
@@ -668,14 +668,14 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
   };
 
   const allCardsSelected =
-    filteredMelds.length > 0 && filteredMelds.every((m) => isCardSelected(m));
-  const someCardsSelected = filteredMelds.some((m) => isCardSelected(m));
+    filteredIssues.length > 0 && filteredIssues.every((m) => isCardSelected(m));
+  const someCardsSelected = filteredIssues.some((m) => isCardSelected(m));
 
   const toggleSelectAllCards = () => {
     if (allCardsSelected) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(filteredMelds);
+      setSelectedItems(filteredIssues);
     }
   };
 
@@ -685,8 +685,8 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
     <>
       <EuiPageTemplate>
         <EuiPageTemplate.Header
-          pageTitle="Melds List"
-          description="Track and manage maintenance requests across all your properties."
+          pageTitle="Issues List"
+          description="Track and manage issues across all your properties."
           breadcrumbs={[
             {
               text: (
@@ -697,8 +697,8 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
             },
           ]}
           rightSideItems={[
-            <EuiButton fill onClick={onNavigateToMeldForm}>
-              Create Meld
+            <EuiButton fill onClick={onNavigateToIssueForm}>
+              Create Issue
             </EuiButton>,
           ]}
         />
@@ -757,7 +757,7 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
           <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
             <EuiFlexItem>
               <EuiFieldSearch
-                placeholder="Search melds..."
+                placeholder="Search issues..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 isClearable
@@ -767,10 +767,10 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
               <EuiFilterGroup>
                 <EuiFilterButton
                   hasActiveFilters={emergencyOnly}
-                  numFilters={MELDS.filter((m) => m.priority === 'high').length}
+                  numFilters={ISSUES.filter((m) => m.priority === 'high').length}
                   onClick={() => setEmergencyOnly((prev) => !prev)}
                 >
-                  Emergency Melds
+                  Emergency Issues
                 </EuiFilterButton>
               </EuiFilterGroup>
             </EuiFlexItem>
@@ -850,7 +850,7 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
                     options={SORT_OPTIONS}
                     value={sortValue}
                     onChange={onSortDropdownChange}
-                    aria-label="Sort melds"
+                    aria-label="Sort issues"
                   />
                 </EuiFlexItem>
               </EuiFlexGroup>
@@ -860,7 +860,7 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
               <EuiButtonEmpty
                 iconType="download"
                 onClick={() =>
-                  downloadCSV(selectedItems.length > 0 ? selectedItems : filteredMelds)
+                  downloadCSV(selectedItems.length > 0 ? selectedItems : filteredIssues)
                 }
               >
                 {selectedItems.length > 0
@@ -876,7 +876,7 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
           {view === 'table' && (
             <EuiBasicTable
               key={tableKey}
-              items={filteredMelds}
+              items={filteredIssues}
               itemId="id"
               columns={columns}
               selection={selection}
@@ -889,9 +889,9 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
 
           {/* ── Card view ── */}
           {view === 'cards' && (
-            filteredMelds.length === 0 ? (
+            filteredIssues.length === 0 ? (
               <EuiText color="subdued" textAlign="center">
-                <p>No melds match the current filters.</p>
+                <p>No issues match the current filters.</p>
               </EuiText>
             ) : (
               <>
@@ -904,28 +904,28 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
                 />
                 <EuiSpacer size="m" />
                 <EuiFlexGrid columns={3} gutterSize="l">
-                  {filteredMelds.map((meld) => {
-                    const priorityCfg = PRIORITY_CONFIG[meld.priority];
-                    const statusCfg   = STATUS_CONFIG[meld.status];
-                    const sourceCfg   = SOURCE_CONFIG[meld.source];
+                  {filteredIssues.map((issue) => {
+                    const priorityCfg = PRIORITY_CONFIG[issue.priority];
+                    const statusCfg   = STATUS_CONFIG[issue.status];
+                    const sourceCfg   = SOURCE_CONFIG[issue.source];
                     return (
-                      <EuiFlexItem key={meld.id}>
+                      <EuiFlexItem key={issue.id}>
                         <EuiCard
                           layout="vertical"
                           title={
                             <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
                               <EuiFlexItem grow={false}>
                                 <EuiCheckbox
-                                  id={`card-select-${meld.id}`}
+                                  id={`card-select-${issue.id}`}
                                   checked={isCardSelected(meld)}
                                   onChange={() => toggleCardItem(meld)}
-                                  aria-label={`Select ${meld.ticketName}`}
+                                  aria-label={`Select ${issue.ticketName}`}
                                 />
                               </EuiFlexItem>
-                              <EuiFlexItem>{meld.ticketName}</EuiFlexItem>
+                              <EuiFlexItem>{issue.ticketName}</EuiFlexItem>
                             </EuiFlexGroup>
                           }
-                          description={<EuiLink href="#">{meld.address}</EuiLink>}
+                          description={<EuiLink href="#">{issue.address}</EuiLink>}
                           footer={
                             <EuiFlexGroup
                               justifyContent="spaceBetween"
@@ -935,10 +935,10 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
                               <EuiFlexItem grow={false}>
                                 <EuiButton
                                   size="s"
-                                  fill={meld.meldState === 'finish'}
-                                  onClick={() => console.log(meld.meldState, meld.id)}
+                                  fill={issue.issueState === 'finish'}
+                                  onClick={() => console.log(issue.issueState, issue.id)}
                                 >
-                                  {meld.meldState === 'schedule' ? 'Schedule' : 'Finish Meld'}
+                                  {issue.issueState === 'schedule' ? 'Schedule' : 'Finish Issue'}
                                 </EuiButton>
                               </EuiFlexItem>
                               <EuiFlexItem grow={false}>
@@ -977,19 +977,19 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
                             compressed
                             columnWidths={[1, 1]}
                             listItems={[
-                              { title: 'Ref ID',    description: meld.referenceId          },
+                              { title: 'Ref ID',    description: issue.referenceId          },
                               {
                                 title: 'Tenants',
                                 description: (
                                   <EuiFlexGroup gutterSize="xs" alignItems="center" responsive={false}>
                                     <EuiFlexItem grow={false}><EuiIcon type="user" size="s" /></EuiFlexItem>
-                                    <EuiFlexItem grow={false}>{meld.tenantCount}</EuiFlexItem>
+                                    <EuiFlexItem grow={false}>{issue.tenantCount}</EuiFlexItem>
                                   </EuiFlexGroup>
                                 ),
                               },
-                              { title: 'Vendor',    description: meld.vendorAssigned ?? '—' },
-                              { title: 'Created',   description: meld.createdDate            },
-                              { title: 'Scheduled', description: meld.scheduledDate ?? '—'   },
+                              { title: 'Vendor',    description: issue.vendorAssigned ?? '—' },
+                              { title: 'Created',   description: issue.createdDate            },
+                              { title: 'Scheduled', description: issue.scheduledDate ?? '—'   },
                             ]}
                           />
                         </EuiCard>
@@ -1016,20 +1016,20 @@ export default function MeldsListPage({ onNavigateHome, onNavigateToMeldForm }) 
                     checked={allCardsSelected}
                     indeterminate={someCardsSelected && !allCardsSelected}
                     onChange={toggleSelectAllCards}
-                    aria-label="Select or deselect all visible melds"
+                    aria-label="Select or deselect all visible issues"
                   />
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
                   <EuiText size="s" color="ghost">
                     <strong>
-                      {selectedItems.length} meld{selectedItems.length !== 1 ? 's' : ''} selected
+                      {selectedItems.length} issue{selectedItems.length !== 1 ? 's' : ''} selected
                     </strong>
                   </EuiText>
                 </EuiFlexItem>
                 {!allCardsSelected && (
                   <EuiFlexItem grow={false}>
-                    <EuiLink color="ghost" onClick={() => setSelectedItems(filteredMelds)}>
-                      Select all {filteredMelds.length} melds
+                    <EuiLink color="ghost" onClick={() => setSelectedItems(filteredIssues)}>
+                      Select all {filteredIssues.length} issues
                     </EuiLink>
                   </EuiFlexItem>
                 )}
