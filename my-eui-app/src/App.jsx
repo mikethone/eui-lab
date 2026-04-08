@@ -7,6 +7,7 @@ import {
   EuiIcon,
 } from '@elastic/eui';
 import FormPage from './pages/FormPage';
+import ResidentsListPage from './pages/ResidentsListPage';
 import IssueFormPage from './pages/IssueFormPage';
 import IssuesListPage from './pages/IssuesListPage';
 import TokensPage from './pages/TokensPage';
@@ -29,6 +30,12 @@ const PAGES = [
     title: 'Issues List',
     description: 'Browse, filter, sort, and manage issues across all properties.',
     icon: 'tableDensityNormal',
+  },
+  {
+    id: 'residents',
+    title: 'Residents',
+    description: 'Manage resident accounts, invitations, and communication channels.',
+    icon: 'user',
   },
   {
     id: 'tokens',
@@ -82,6 +89,7 @@ function App() {
           onNavigateToIssueForm={() => setCurrentPage('issue-form')}
         />
       )}
+      {currentPage === 'residents' && <ResidentsListPage onNavigateHome={navigateHome} />}
       {currentPage === 'tokens' && <TokensPage onNavigateHome={navigateHome} />}
     </>
   );
