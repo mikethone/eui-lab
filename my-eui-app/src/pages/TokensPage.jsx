@@ -18,7 +18,7 @@ import {
   priorityColors,
   badgeColors,
 } from '../theme/tokens';
-import { issueBlue, shade } from '../theme/euiTheme';
+import { brandBlue, shade } from '../theme/euiTheme';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -128,19 +128,11 @@ export default function TokensPage({ onNavigateHome }) {
           description="PM color tokens mapped to EUI Borealis semantic slots — blue ramp, shade ramp, semantic states, priority, and badge palettes."
         />
 
-        <SubHeading title="Issue Blue Ramp" />
+        <SubHeading title="Brand Blue Ramp" />
         <EuiFlexGroup gutterSize="m" wrap responsive={false}>
-          {[
-            { name: 'emptyBlue',    hex: issueBlue.emptyBlue },
-            { name: 'lightestBlue', hex: issueBlue.lightestBlue },
-            { name: 'lightBlue',    hex: issueBlue.lightBlue },
-            { name: 'mediumBlue',   hex: issueBlue.mediumBlue },
-            { name: 'darkBlue',     hex: issueBlue.darkBlue },
-            { name: 'darkestBlue',  hex: issueBlue.darkestBlue },
-            { name: 'fullBlue',     hex: issueBlue.fullBlue },
-          ].map(({ name, hex }) => (
-            <EuiFlexItem key={name} grow={false}>
-              <ColorSwatch name={name} hex={hex} />
+          {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((step) => (
+            <EuiFlexItem key={step} grow={false}>
+              <ColorSwatch name={`brandBlue.${step}`} hex={brandBlue[step]} />
             </EuiFlexItem>
           ))}
         </EuiFlexGroup>
