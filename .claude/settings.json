@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(find /Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui -name *.d.ts -path *provider*)",
-      "Bash(find /Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-common -name *.d.ts)"
+      "Bash(find /Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-common -name *.d.ts)",
+      "Bash(node -e \"const t = require\\('/Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-borealis/lib/eui_theme_borealis_light.json'\\); console.log\\(JSON.stringify\\(t.breakpoint || t.breakpoints || Object.keys\\(t\\)\\)\\)\")",
+      "Bash(node -e \"const t = require\\('/Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-borealis/lib/eui_theme_borealis_light.json'\\); console.log\\(JSON.stringify\\(t.euiBreakpoints\\)\\)\")"
     ]
   }
 }
