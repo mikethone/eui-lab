@@ -14,8 +14,8 @@
 // ─── Shade ramp — PM neutral grays mapped to Borealis 7-step scale ───────────
 // Borealis defaults have a blue-gray cast; PM uses neutral grays.
 export const shade = {
-  emptyShade:    '#F8FAFB',  // backgroundGray
-  lightestShade: '#EBEFF2',  // gray200
+  emptyShade:    '#FFFFFF',  // white
+  lightestShade: '#F8FAFB',  // backgroundGray
   lightShade:    '#CCD3D9',  // gray400
   mediumShade:   '#AEB6BD',  // gray500
   darkShade:     '#6B757D',  // gray600
@@ -23,17 +23,20 @@ export const shade = {
   fullShade:     '#0C0D0D',  // gray900
 };
 
-// ─── Meld Blue ramp — 7-step primary blue scale ───────────────────────────────
-// Parallels the shade scale structure. Steps without an existing PM value are
-// interpolated between their neighbors and marked // invented.
-export const issueBlue = {
-  emptyBlue:    '#E6F2FF',  // backgroundBasePrimary
-  lightestBlue: '#CCE5FF',  // backgroundLightPrimary
-  lightBlue:    '#99CBFF',  // borderBasePrimary
-  mediumBlue:   '#6CAEEE',  // invented
-  darkBlue:     '#3F91DD',  // invented
-  darkestBlue:  '#1175CC',  // primary / backgroundFilledPrimary
-  fullBlue:     '#0B4980',  // textPrimary / link
+// ─── Brand Blue ramp — 11-step primary blue scale (50–950) ───────────────────
+// 0 = white, 1000 = black. PM brand values anchored; remainder interpolated.
+export const brandBlue = {
+  50:  '#F8FBFD',  // PM lightBlue
+  100: '#E6F2FF',  // PM veryLightBlue
+  200: '#CCE5FF',  
+  300: '#99CBFF',  
+  400: '#6CAEEE',  
+  500: '#1175CC',  // PM meldBlue — primary
+  600: '#0E5FA6',  
+  700: '#0B4980',  // PM darkHover
+  800: '#083869',  
+  900: '#052748',  
+  950: '#041C32',  
 };
 
 export const pmTheme = {
@@ -54,18 +57,18 @@ export const pmTheme = {
       textSubdued:   shade.darkShade,
 
       // ── Primary blue ──────────────────────────────────────────────────
-      primary:                              issueBlue.darkestBlue,
-      backgroundBasePrimary:                issueBlue.emptyBlue,
-      backgroundBaseInteractiveSelect:      issueBlue.emptyBlue,
-      highlight:                            issueBlue.emptyBlue,
-      backgroundLightPrimary:               issueBlue.lightestBlue,
-      backgroundBaseInteractiveSelectHover: issueBlue.lightestBlue,
-      borderBasePrimary:                    issueBlue.lightBlue,
-      backgroundFilledPrimary:              issueBlue.darkestBlue,
-      borderStrongPrimary:                  issueBlue.darkestBlue,
-      textPrimary:                          issueBlue.fullBlue,
-      link:                                 issueBlue.fullBlue,
-      backgroundBaseInteractiveHover:       'rgba(11, 73, 128, 0.04)',  // fullBlue @ 4%
+      primary:                              brandBlue[500],
+      backgroundBasePrimary:                brandBlue[100],
+      backgroundBaseInteractiveSelect:      brandBlue[100],
+      highlight:                            brandBlue[100],
+      backgroundLightPrimary:               brandBlue[200],
+      backgroundBaseInteractiveSelectHover: brandBlue[200],
+      borderBasePrimary:                    brandBlue[300],
+      backgroundFilledPrimary:              brandBlue[500],
+      borderStrongPrimary:                  brandBlue[500],
+      textPrimary:                          brandBlue[700],
+      link:                                 brandBlue[700],
+      backgroundBaseInteractiveHover:       'rgba(208, 92, 80, 0.04)',  // meldBlue @ 4%
 
       // ── Semantic states ───────────────────────────────────────────────
       success: '#006B56',
@@ -76,11 +79,11 @@ export const pmTheme = {
     // DARK — minimal overrides; Borealis dark defaults are acceptable
     // for most tokens. Extend here if specific dark values are needed.
     DARK: {
-      primary:                issueBlue.darkestBlue,
-      backgroundFilledPrimary:issueBlue.darkestBlue,
-      borderStrongPrimary:    issueBlue.darkestBlue,
-      textPrimary:            issueBlue.fullBlue,
-      link:                   issueBlue.fullBlue,
+      primary:                brandBlue[500],
+      backgroundFilledPrimary:brandBlue[500],
+      borderStrongPrimary:    brandBlue[500],
+      textPrimary:            brandBlue[700],
+      link:                   brandBlue[700],
       success: '#006B56',
       danger:  '#B2250F',
       warning: '#FFCE70',
