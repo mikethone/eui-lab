@@ -8,6 +8,8 @@ import {
 } from '@elastic/eui';
 import FormPage from './pages/FormPage';
 import ResidentsListPage from './pages/ResidentsListPage';
+import ResidentsListAltPage from './pages/ResidentsListAltPage';
+import ResidentsDataGridPage from './pages/ResidentsDataGridPage';
 import IssueFormPage from './pages/IssueFormPage';
 import IssuesListPage from './pages/IssuesListPage';
 import TokensPage from './pages/TokensPage';
@@ -35,6 +37,18 @@ const PAGES = [
     id: 'residents',
     title: 'Residents',
     description: 'Manage resident accounts, invitations, and communication channels.',
+    icon: 'user',
+  },
+  {
+    id: 'residents-alt',
+    title: 'Residents (Alt)',
+    description: 'Alternate layout using EuiBasicTable native responsive view.',
+    icon: 'user',
+  },
+  {
+    id: 'residents-datagrid',
+    title: 'Residents (EuiDataGrid)',
+    description: 'Data grid layout with built-in column controls and virtualization.',
     icon: 'user',
   },
   {
@@ -90,6 +104,8 @@ function App() {
         />
       )}
       {currentPage === 'residents' && <ResidentsListPage onNavigateHome={navigateHome} />}
+      {currentPage === 'residents-alt' && <ResidentsListAltPage onNavigateHome={navigateHome} />}
+      {currentPage === 'residents-datagrid' && <ResidentsDataGridPage onNavigateHome={navigateHome} />}
       {currentPage === 'tokens' && <TokensPage onNavigateHome={navigateHome} />}
     </>
   );
