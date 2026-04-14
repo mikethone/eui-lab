@@ -35,14 +35,14 @@ const PAGES = [
   },
   {
     id: 'residents',
-    title: 'Residents',
+    title: 'Residents (enhanced)',
     description: 'Manage resident accounts, invitations, and communication channels.',
     icon: 'user',
   },
   {
     id: 'residents-alt',
-    title: 'Residents (Alt)',
-    description: 'Alternate layout using EuiBasicTable native responsive view.',
+    title: 'Residents (simple)',
+    description: 'Simplified layout using EuiBasicTable native responsive view.',
     icon: 'user',
   },
   {

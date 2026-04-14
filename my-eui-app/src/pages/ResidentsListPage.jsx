@@ -12,8 +12,10 @@ import {
   EuiCard,
   EuiCheckbox,
   EuiDescriptionList,
-  EuiFlexGrid,
+  useIsWithinBreakpoints,
+  useEuiTheme,
   EuiContextMenuItem,
+
   EuiContextMenuPanel,
   EuiFieldSearch,
   EuiFieldText,
@@ -259,6 +261,10 @@ function RowActionsPopover({ item }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ResidentsListPage({ onNavigateHome }) {
+  const { euiTheme } = useEuiTheme();
+  const isXSmallScreen = useIsWithinBreakpoints(['xs']);
+  const isSmallScreen = useIsWithinBreakpoints(['s']);
+
   const [view, setView]                   = useState('table');
   const [searchText, setSearchText]       = useState('');
   const [quickFilter, setQuickFilter]     = useState('All');
@@ -421,29 +427,34 @@ export default function ResidentsListPage({ onNavigateHome }) {
       field: 'lastName',
       name: 'Name',
       sortable: true,
+      width: '160px',
       render: (lastName, item) => `${item.firstName} ${lastName}`,
     },
     {
       field: 'email',
       name: 'Email',
+      width: '200px',
       render: (email) =>
         email ? <EuiLink href={`mailto:${email}`}>{email}</EuiLink> : '—',
     },
     {
       field: 'phone',
       name: 'Phone',
+      width: '130px',
       render: (phone) => phone ?? '—',
     },
     {
       field: 'lastInvited',
       name: 'Last Invited',
       sortable: true,
+      width: '150px',
       render: (date) => date ?? '—',
     },
     {
       field: 'status',
       name: 'Status',
       sortable: true,
+      width: '100px',
       render: (status) => {
         const cfg = STATUS_CONFIG[status];
         return <EuiBadge color={cfg.color}>{cfg.label}</EuiBadge>;
@@ -453,11 +464,13 @@ export default function ResidentsListPage({ onNavigateHome }) {
       field: 'lastActive',
       name: 'Last Active',
       sortable: true,
+      width: '150px',
       render: (date) => date ?? '—',
     },
     {
       field: 'channel',
       name: 'Channel',
+      width: '130px',
       render: (channel) => channel ?? '—',
     },
     {
@@ -489,7 +502,7 @@ export default function ResidentsListPage({ onNavigateHome }) {
     <>
       <EuiPageTemplate>
         <EuiPageTemplate.Header
-          pageTitle="Residents"
+          pageTitle="Residents (enhanced)"
           description="Manage resident accounts, invitations, and communication channels."
           breadcrumbs={[{
             text: <EuiLink onClick={onNavigateHome}><EuiIcon type="arrowLeft" size="s" /> Home</EuiLink>,
@@ -501,7 +514,7 @@ export default function ResidentsListPage({ onNavigateHome }) {
           ]}
         />
 
-        <EuiPageTemplate.Section>
+        <EuiPageTemplate.Section css={{ minWidth: 0 }}>
 
           {/* ── Toolbar row 1: Search | Quick filters ── */}
           <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
@@ -626,16 +639,19 @@ export default function ResidentsListPage({ onNavigateHome }) {
 
           {/* ── Table view ── */}
           {view === 'table' && (
-            <EuiBasicTable
-              items={paginatedResidents}
-              itemId="id"
-              columns={columns}
-              selection={selection}
-              sorting={sorting}
-              onChange={onTableChange}
-              pagination={pagination}
-              rowHeader="lastName"
-            />
+            <div style={{ overflowX: 'scroll' }}>
+              <EuiBasicTable
+                items={paginatedResidents}
+                itemId="id"
+                columns={columns}
+                selection={selection}
+                sorting={sorting}
+                onChange={onTableChange}
+                pagination={pagination}
+                rowHeader="lastName"
+                responsiveBreakpoint={false}
+              />
+            </div>
           )}
 
           {/* ── Card view ── */}
@@ -660,13 +676,17 @@ export default function ResidentsListPage({ onNavigateHome }) {
                   }}
                 />
                 <EuiSpacer size="m" />
-                <EuiFlexGrid columns={3} gutterSize="l">
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: isXSmallScreen ? '1fr' : isSmallScreen ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                  gap: euiTheme.size.l,
+                }}>
                   {filteredResidents.map((resident) => {
                     const statusCfg = STATUS_CONFIG[resident.status];
                     const isSelected = selectedItems.some((s) => s.id === resident.id);
                     return (
-                      <EuiFlexItem key={resident.id}>
-                        <EuiCard
+                      <EuiCard
+                        key={resident.id}
                           layout="vertical"
                           title={
                             <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
@@ -715,10 +735,9 @@ export default function ResidentsListPage({ onNavigateHome }) {
                             ]}
                           />
                         </EuiCard>
-                      </EuiFlexItem>
                     );
                   })}
-                </EuiFlexGrid>
+                </div>
               </>
             )
           )}

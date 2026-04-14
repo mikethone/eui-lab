@@ -215,8 +215,8 @@ export default function ResidentsListAltPage({ onNavigateHome }) {
     <>
       <EuiPageTemplate>
         <EuiPageTemplate.Header
-          pageTitle="Residents (Alt)"
-          description="Alternate layout using EuiBasicTable native responsive view."
+          pageTitle="Residents (simple)"
+          description="Simplified layout using EuiBasicTable native responsive view."
           breadcrumbs={[{
             text: <EuiLink onClick={onNavigateHome}><EuiIcon type="arrowLeft" size="s" /> Home</EuiLink>,
           }]}
