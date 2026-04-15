@@ -28,15 +28,15 @@ export const shade = {
 export const brandBlue = {
   50:  '#F8FBFD',  // PM lightBlue
   100: '#E6F2FF',  // PM veryLightBlue
-  200: '#CCE5FF',  
-  300: '#99CBFF',  
-  400: '#6CAEEE',  
+  200: '#D1ECFF',
+  300: '#B0E3FF',  // PMS 2975c
+  400: '#7ABDE8',
   500: '#1175CC',  // PM meldBlue — primary
-  600: '#0E5FA6',  
-  700: '#0B4980',  // PM darkHover
-  800: '#083869',  
-  900: '#052748',  
-  950: '#041C32',  
+  600: '#0B4980',  // PM darkHover
+  700: '#074470',
+  800: '#053A54',
+  900: '#022935',
+  950: '#011820',
 };
 
 export const pmTheme = {
