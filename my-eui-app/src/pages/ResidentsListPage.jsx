@@ -9,9 +9,8 @@ import {
   EuiButtonEmpty,
   EuiButtonGroup,
   EuiButtonIcon,
-  EuiCard,
+  EuiPanel,
   EuiCheckbox,
-  EuiDescriptionList,
   useIsWithinBreakpoints,
   useEuiTheme,
   EuiContextMenuItem,
@@ -263,7 +262,7 @@ function RowActionsPopover({ item }) {
 export default function ResidentsListPage({ onNavigateHome }) {
   const { euiTheme } = useEuiTheme();
   const isXSmallScreen = useIsWithinBreakpoints(['xs']);
-  const isSmallScreen = useIsWithinBreakpoints(['s']);
+  const isSmallScreen  = useIsWithinBreakpoints(['s']);
 
   const [view, setView]                   = useState('table');
   const [searchText, setSearchText]       = useState('');
@@ -494,6 +493,7 @@ export default function ResidentsListPage({ onNavigateHome }) {
     pageSize,
     totalItemCount: filteredResidents.length,
     pageSizeOptions: [10, 25, 50],
+    showPerPageOptions: true,
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -502,7 +502,7 @@ export default function ResidentsListPage({ onNavigateHome }) {
     <>
       <EuiPageTemplate>
         <EuiPageTemplate.Header
-          pageTitle="Residents (enhanced)"
+          pageTitle="Residents (parity)"
           description="Manage resident accounts, invitations, and communication channels."
           breadcrumbs={[{
             text: <EuiLink onClick={onNavigateHome}><EuiIcon type="arrowLeft" size="s" /> Home</EuiLink>,
@@ -546,20 +546,11 @@ export default function ResidentsListPage({ onNavigateHome }) {
                 ))}
               </EuiFilterGroup>
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EuiButtonGroup
-                legend="Toggle table or card view"
-                options={VIEW_OPTIONS}
-                idSelected={view}
-                onChange={(id) => setView(id)}
-                isIconOnly
-              />
-            </EuiFlexItem>
           </EuiFlexGroup>
 
           <EuiSpacer size="s" />
 
-          {/* ── Toolbar row 2: All Filters | Sort | Download ── */}
+          {/* ── Toolbar row 2: All Filters | Sort | Download | View toggle ── */}
           <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
             <EuiFlexItem grow={false}>
               <EuiFilterGroup>
@@ -606,19 +597,12 @@ export default function ResidentsListPage({ onNavigateHome }) {
             </EuiFlexItem>
 
             <EuiFlexItem>
-              <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
-                <EuiFlexItem grow={false}>
-                  <EuiText size="s">Sort:</EuiText>
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiSelect
-                    options={SORT_OPTIONS}
-                    value={`${sortField}_${sortDirection}`}
-                    onChange={onSortDropdownChange}
-                    aria-label="Sort residents"
-                  />
-                </EuiFlexItem>
-              </EuiFlexGroup>
+              <EuiSelect
+                options={SORT_OPTIONS}
+                value={`${sortField}_${sortDirection}`}
+                onChange={onSortDropdownChange}
+                aria-label="Sort residents"
+              />
             </EuiFlexItem>
 
             <EuiFlexItem grow={false}>
@@ -632,6 +616,16 @@ export default function ResidentsListPage({ onNavigateHome }) {
                   ? `Download ${selectedItems.length} selected`
                   : 'Download all'}
               </EuiButtonEmpty>
+            </EuiFlexItem>
+
+            <EuiFlexItem grow={false}>
+              <EuiButtonGroup
+                legend="Toggle table or card view"
+                options={VIEW_OPTIONS}
+                idSelected={view}
+                onChange={(id) => setView(id)}
+                isIconOnly
+              />
             </EuiFlexItem>
           </EuiFlexGroup>
 
@@ -678,63 +672,83 @@ export default function ResidentsListPage({ onNavigateHome }) {
                 <EuiSpacer size="m" />
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: isXSmallScreen ? '1fr' : isSmallScreen ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                  gridTemplateColumns: isXSmallScreen ? '1fr' : isSmallScreen ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
                   gap: euiTheme.size.l,
                 }}>
                   {filteredResidents.map((resident) => {
                     const statusCfg = STATUS_CONFIG[resident.status];
                     const isSelected = selectedItems.some((s) => s.id === resident.id);
+                    const fieldBorder = { borderBottom: `1px solid ${euiTheme.colors.borderBasePlain}`, padding: `${euiTheme.size.s} ${euiTheme.size.base}` };
                     return (
-                      <EuiCard
-                        key={resident.id}
-                          layout="vertical"
-                          title={
-                            <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
-                              <EuiFlexItem grow={false}>
-                                <EuiCheckbox
-                                  id={`card-select-${resident.id}`}
-                                  checked={isSelected}
-                                  onChange={() =>
-                                    setSelectedItems((prev) =>
-                                      isSelected
-                                        ? prev.filter((s) => s.id !== resident.id)
-                                        : [...prev, resident]
-                                    )
-                                  }
-                                  aria-label={`Select ${resident.firstName} ${resident.lastName}`}
-                                />
-                              </EuiFlexItem>
-                              <EuiFlexItem>{`${resident.firstName} ${resident.lastName}`}</EuiFlexItem>
-                            </EuiFlexGroup>
-                          }
-                          description={
-                            resident.email
+                      <EuiPanel key={resident.id} hasBorder paddingSize="none">
+
+                        {/* Control row: checkbox + actions */}
+                        <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" gutterSize="none" responsive={false} style={{ padding: `${euiTheme.size.s} ${euiTheme.size.base}` }}>
+                          <EuiFlexItem grow={false}>
+                            <EuiCheckbox
+                              id={`card-select-${resident.id}`}
+                              checked={isSelected}
+                              onChange={() =>
+                                setSelectedItems((prev) =>
+                                  isSelected
+                                    ? prev.filter((s) => s.id !== resident.id)
+                                    : [...prev, resident]
+                                )
+                              }
+                              aria-label={`Select ${resident.firstName} ${resident.lastName}`}
+                            />
+                          </EuiFlexItem>
+                          <EuiFlexItem grow={false}>
+                            <RowActionsPopover item={resident} />
+                          </EuiFlexItem>
+                        </EuiFlexGroup>
+
+                        {/* Name + status */}
+                        <div style={fieldBorder}>
+                          <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" gutterSize="none" responsive={false}>
+                            <EuiFlexItem grow={false}>
+                              <EuiText size="xs" color="subdued">Resident</EuiText>
+                            </EuiFlexItem>
+                            <EuiFlexItem grow={false}>
+                              <EuiBadge color={statusCfg.color}>{statusCfg.label}</EuiBadge>
+                            </EuiFlexItem>
+                          </EuiFlexGroup>
+                          <EuiText size="m">{`${resident.firstName} ${resident.lastName}`}</EuiText>
+                        </div>
+
+                        {/* Email */}
+                        <div style={fieldBorder}>
+                          <EuiText size="xs" color="subdued">Email</EuiText>
+                          <EuiText size="s">
+                            {resident.email
                               ? <EuiLink href={`mailto:${resident.email}`}>{resident.email}</EuiLink>
-                              : '—'
-                          }
-                          footer={
-                            <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" responsive={false}>
-                              <EuiFlexItem grow={false}>
-                                <EuiBadge color={statusCfg.color}>{statusCfg.label}</EuiBadge>
-                              </EuiFlexItem>
-                              <EuiFlexItem grow={false}>
-                                <RowActionsPopover item={resident} />
-                              </EuiFlexItem>
-                            </EuiFlexGroup>
-                          }
-                        >
-                          <EuiDescriptionList
-                            type="column"
-                            compressed
-                            columnWidths={[1, 1]}
-                            listItems={[
-                              { title: 'Phone',        description: resident.phone ?? '—'       },
-                              { title: 'Last Invited', description: resident.lastInvited ?? '—' },
-                              { title: 'Last Active',  description: resident.lastActive ?? '—'  },
-                              { title: 'Channel',      description: resident.channel ?? '—'     },
-                            ]}
-                          />
-                        </EuiCard>
+                              : '—'}
+                          </EuiText>
+                        </div>
+
+                        {/* Phone */}
+                        <div style={fieldBorder}>
+                          <EuiText size="xs" color="subdued">Phone</EuiText>
+                          <EuiText size="s">
+                            {resident.phone
+                              ? <EuiLink href={`tel:${resident.phone}`}>{resident.phone}</EuiLink>
+                              : '—'}
+                          </EuiText>
+                        </div>
+
+                        {/* Last Invited */}
+                        <div style={fieldBorder}>
+                          <EuiText size="xs" color="subdued">Last Invited</EuiText>
+                          <EuiText size="s">{resident.lastInvited ?? '—'}</EuiText>
+                        </div>
+
+                        {/* Channel */}
+                        <div style={{ padding: `${euiTheme.size.s} ${euiTheme.size.base}` }}>
+                          <EuiText size="xs" color="subdued">Channel</EuiText>
+                          <EuiText size="s">{resident.channel ?? '—'}</EuiText>
+                        </div>
+
+                      </EuiPanel>
                     );
                   })}
                 </div>

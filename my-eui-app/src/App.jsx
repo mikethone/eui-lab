@@ -35,7 +35,7 @@ const PAGES = [
   },
   {
     id: 'residents',
-    title: 'Residents (enhanced)',
+    title: 'Residents (parity)',
     description: 'Manage resident accounts, invitations, and communication channels.',
     icon: 'user',
   },
