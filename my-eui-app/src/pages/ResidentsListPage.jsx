@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import dateMath from '@elastic/datemath';
 import {
   EuiPageTemplate,
   EuiBasicTable,
@@ -14,24 +13,19 @@ import {
   useIsWithinBreakpoints,
   useEuiTheme,
   EuiContextMenuItem,
-
   EuiContextMenuPanel,
   EuiFieldSearch,
-  EuiFieldText,
   EuiFilterButton,
   EuiFilterGroup,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiHorizontalRule,
   EuiIcon,
   EuiLink,
   EuiPopover,
-  EuiPopoverFooter,
-  EuiPopoverTitle,
   EuiSelect,
   EuiSpacer,
-  EuiSuperDatePicker,
   EuiText,
+  EuiThemeProvider,
 } from '@elastic/eui';
 import { RESIDENTS } from '../data/residents';
 
@@ -58,40 +52,6 @@ const SORT_OPTIONS = [
   { value: 'lastActive_asc',   text: 'Last Active (oldest first)'  },
 ];
 
-// ─── Filter definitions ───────────────────────────────────────────────────────
-
-const FILTER_DEFS = [
-  { id: 'name',    label: 'Name',    type: 'text' },
-  { id: 'email',   label: 'Email',   type: 'text' },
-  { id: 'phone',   label: 'Phone',   type: 'text' },
-  {
-    id: 'status',
-    label: 'Status',
-    type: 'enum',
-    options: Object.entries(STATUS_CONFIG).map(([v, c]) => ({ value: v, text: c.label })),
-  },
-  {
-    id: 'channel',
-    label: 'Channel',
-    type: 'enum',
-    options: [{ value: 'MAX Digital', text: 'MAX Digital' }],
-  },
-];
-
-const DEFAULT_FILTERS = Object.fromEntries(
-  FILTER_DEFS.map(({ id }) => [id, { enabled: false, operator: 'includes', value: '' }])
-);
-
-const OPERATOR_OPTIONS = [
-  { value: 'includes', text: 'Includes' },
-  { value: 'excludes', text: 'Excludes' },
-];
-
-const DEFAULT_INVITED_START = 'now-2y';
-const DEFAULT_INVITED_END   = 'now';
-const DEFAULT_ACTIVE_START  = 'now-2y';
-const DEFAULT_ACTIVE_END    = 'now';
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function parseResidentDate(str) {
@@ -113,105 +73,6 @@ function sortResidents(residents, field, direction) {
     if (aVal > bVal) return direction === 'asc' ? 1 : -1;
     return 0;
   });
-}
-
-function downloadCSV(residents) {
-  const headers = ['Name', 'Email', 'Phone', 'Last Invited', 'Status', 'Last Active', 'Channel'];
-  const rows = residents.map((r) => [
-    `${r.firstName} ${r.lastName}`,
-    r.email ?? '',
-    r.phone ?? '',
-    r.lastInvited ?? '',
-    r.status,
-    r.lastActive ?? '',
-    r.channel ?? '',
-  ]);
-  const csv = [headers, ...rows]
-    .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
-    .join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'residents.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ─── Filter panel ─────────────────────────────────────────────────────────────
-
-function FilterPanel({
-  filters, onChange,
-  invitedStart, invitedEnd, onInvitedTimeChange,
-  activeStart, activeEnd, onActiveTimeChange,
-}) {
-  return (
-    <div style={{ width: 380 }}>
-      {FILTER_DEFS.map((def, i) => {
-        const f = filters[def.id];
-        return (
-          <div key={def.id}>
-            {i > 0 && <EuiHorizontalRule margin="xs" />}
-            <EuiCheckbox
-              id={`filter-enable-${def.id}`}
-              label={def.label}
-              checked={f.enabled}
-              onChange={() => onChange(def.id, 'enabled', !f.enabled)}
-            />
-            {f.enabled && (
-              <EuiFlexGroup gutterSize="s" style={{ marginTop: 8 }} responsive={false}>
-                <EuiFlexItem grow={false}>
-                  <EuiSelect
-                    options={OPERATOR_OPTIONS}
-                    value={f.operator}
-                    onChange={(e) => onChange(def.id, 'operator', e.target.value)}
-                    compressed
-                    aria-label={`${def.label} operator`}
-                  />
-                </EuiFlexItem>
-                <EuiFlexItem>
-                  {def.type === 'text' ? (
-                    <EuiFieldText
-                      placeholder={`Enter ${def.label.toLowerCase()}...`}
-                      value={f.value}
-                      onChange={(e) => onChange(def.id, 'value', e.target.value)}
-                      compressed
-                    />
-                  ) : (
-                    <EuiSelect
-                      options={[{ value: '', text: 'Select…' }, ...def.options]}
-                      value={f.value}
-                      onChange={(e) => onChange(def.id, 'value', e.target.value)}
-                      compressed
-                      aria-label={`${def.label} value`}
-                    />
-                  )}
-                </EuiFlexItem>
-              </EuiFlexGroup>
-            )}
-          </div>
-        );
-      })}
-      <EuiHorizontalRule margin="xs" />
-      <EuiText size="xs" color="subdued" style={{ marginBottom: 6 }}>Last Invited date range</EuiText>
-      <EuiSuperDatePicker
-        start={invitedStart}
-        end={invitedEnd}
-        onTimeChange={onInvitedTimeChange}
-        showUpdateButton={false}
-        width="full"
-      />
-      <EuiHorizontalRule margin="xs" />
-      <EuiText size="xs" color="subdued" style={{ marginBottom: 6 }}>Last Active date range</EuiText>
-      <EuiSuperDatePicker
-        start={activeStart}
-        end={activeEnd}
-        onTimeChange={onActiveTimeChange}
-        showUpdateButton={false}
-        width="full"
-      />
-    </div>
-  );
 }
 
 // ─── Row actions ──────────────────────────────────────────────────────────────
@@ -262,7 +123,8 @@ function RowActionsPopover({ item }) {
 export default function ResidentsListPage({ onNavigateHome }) {
   const { euiTheme } = useEuiTheme();
   const isXSmallScreen = useIsWithinBreakpoints(['xs']);
-  const isSmallScreen  = useIsWithinBreakpoints(['s']);
+  const isSmallScreen  = useIsWithinBreakpoints(['s']);         // card grid only
+  const isBelowXL      = useIsWithinBreakpoints(['s', 'm', 'l']); // toolbar 2-row
 
   const [view, setView]                   = useState('table');
   const [searchText, setSearchText]       = useState('');
@@ -273,65 +135,7 @@ export default function ResidentsListPage({ onNavigateHome }) {
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedItems, setSelectedItems] = useState([]);
 
-  // ── Panel filters ──
-
-  const [isFilterOpen, setIsFilterOpen]     = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
-  const [draftFilters, setDraftFilters]     = useState(DEFAULT_FILTERS);
-
-  const [appliedInvitedStart, setAppliedInvitedStart] = useState(DEFAULT_INVITED_START);
-  const [appliedInvitedEnd,   setAppliedInvitedEnd]   = useState(DEFAULT_INVITED_END);
-  const [appliedActiveStart,  setAppliedActiveStart]  = useState(DEFAULT_ACTIVE_START);
-  const [appliedActiveEnd,    setAppliedActiveEnd]    = useState(DEFAULT_ACTIVE_END);
-
-  const [draftInvitedStart, setDraftInvitedStart] = useState(DEFAULT_INVITED_START);
-  const [draftInvitedEnd,   setDraftInvitedEnd]   = useState(DEFAULT_INVITED_END);
-  const [draftActiveStart,  setDraftActiveStart]  = useState(DEFAULT_ACTIVE_START);
-  const [draftActiveEnd,    setDraftActiveEnd]    = useState(DEFAULT_ACTIVE_END);
-
-  const activeFilterCount =
-    Object.values(appliedFilters).filter((f) => f.enabled && f.value !== '').length +
-    (appliedInvitedStart !== DEFAULT_INVITED_START || appliedInvitedEnd !== DEFAULT_INVITED_END ? 1 : 0) +
-    (appliedActiveStart  !== DEFAULT_ACTIVE_START  || appliedActiveEnd  !== DEFAULT_ACTIVE_END  ? 1 : 0);
-
-  const openFilterPopover = () => {
-    if (!isFilterOpen) {
-      setDraftFilters(appliedFilters);
-      setDraftInvitedStart(appliedInvitedStart);
-      setDraftInvitedEnd(appliedInvitedEnd);
-      setDraftActiveStart(appliedActiveStart);
-      setDraftActiveEnd(appliedActiveEnd);
-    }
-    setIsFilterOpen((v) => !v);
-  };
-
-  const onFilterChange = (filterId, key, value) => {
-    setDraftFilters((prev) => ({
-      ...prev,
-      [filterId]: { ...prev[filterId], [key]: value },
-    }));
-  };
-
-  const applyFilters = () => {
-    setAppliedFilters(draftFilters);
-    setAppliedInvitedStart(draftInvitedStart);
-    setAppliedInvitedEnd(draftInvitedEnd);
-    setAppliedActiveStart(draftActiveStart);
-    setAppliedActiveEnd(draftActiveEnd);
-    setIsFilterOpen(false);
-    setPageIndex(0);
-  };
-
-  const clearFilters = () => {
-    setDraftFilters(DEFAULT_FILTERS);       setAppliedFilters(DEFAULT_FILTERS);
-    setDraftInvitedStart(DEFAULT_INVITED_START); setAppliedInvitedStart(DEFAULT_INVITED_START);
-    setDraftInvitedEnd(DEFAULT_INVITED_END);     setAppliedInvitedEnd(DEFAULT_INVITED_END);
-    setDraftActiveStart(DEFAULT_ACTIVE_START);   setAppliedActiveStart(DEFAULT_ACTIVE_START);
-    setDraftActiveEnd(DEFAULT_ACTIVE_END);       setAppliedActiveEnd(DEFAULT_ACTIVE_END);
-    setPageIndex(0);
-  };
-
-  // ── Sort ──
+  // ── Handlers ──
 
   const onSortDropdownChange = (e) => {
     const parts = e.target.value.split('_');
@@ -374,45 +178,8 @@ export default function ResidentsListPage({ onNavigateHome }) {
       result = result.filter((r) => r.status === quickFilter);
     }
 
-    FILTER_DEFS.forEach(({ id, type }) => {
-      const f = appliedFilters[id];
-      if (!f.enabled || f.value === '') return;
-      result = result.filter((r) => {
-        const fieldVal =
-          id === 'name' ? `${r.firstName} ${r.lastName}` : (r[id] ?? '');
-        if (type === 'text') {
-          const matches = String(fieldVal).toLowerCase().includes(f.value.toLowerCase());
-          return f.operator === 'includes' ? matches : !matches;
-        }
-        const matches = fieldVal === f.value;
-        return f.operator === 'includes' ? matches : !matches;
-      });
-    });
-
-    if (appliedInvitedStart !== DEFAULT_INVITED_START || appliedInvitedEnd !== DEFAULT_INVITED_END) {
-      const start = dateMath.parse(appliedInvitedStart);
-      const end   = dateMath.parse(appliedInvitedEnd, { roundUp: true });
-      if (start && end) {
-        result = result.filter((r) => {
-          const d = parseResidentDate(r.lastInvited);
-          return d && d >= start.toDate() && d <= end.toDate();
-        });
-      }
-    }
-
-    if (appliedActiveStart !== DEFAULT_ACTIVE_START || appliedActiveEnd !== DEFAULT_ACTIVE_END) {
-      const start = dateMath.parse(appliedActiveStart);
-      const end   = dateMath.parse(appliedActiveEnd, { roundUp: true });
-      if (start && end) {
-        result = result.filter((r) => {
-          const d = parseResidentDate(r.lastActive);
-          return d && d >= start.toDate() && d <= end.toDate();
-        });
-      }
-    }
-
     return sortResidents(result, sortField, sortDirection);
-  }, [searchText, quickFilter, appliedFilters, appliedInvitedStart, appliedInvitedEnd, appliedActiveStart, appliedActiveEnd, sortField, sortDirection]);
+  }, [searchText, quickFilter, sortField, sortDirection]);
 
   const paginatedResidents = useMemo(() => {
     const start = pageIndex * pageSize;
@@ -516,21 +283,22 @@ export default function ResidentsListPage({ onNavigateHome }) {
 
         <EuiPageTemplate.Section css={{ minWidth: 0 }}>
 
-          {/* ── Toolbar row 1: Search | Quick filters ── */}
-          <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
-            <EuiFlexItem>
+          {/* ── Toolbar: xs — 3 rows ── */}
+          {isXSmallScreen && (
+            <>
               <EuiFieldSearch
                 placeholder="Search residents..."
                 value={searchText}
                 onChange={(e) => { setSearchText(e.target.value); setPageIndex(0); }}
                 isClearable
+                fullWidth
               />
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EuiFilterGroup>
+              <EuiSpacer size="s" />
+              <EuiFilterGroup fullWidth>
                 <EuiFilterButton
                   hasActiveFilters={quickFilter === 'All'}
                   onClick={() => { setQuickFilter('All'); setPageIndex(0); }}
+                  grow
                 >
                   All
                 </EuiFilterButton>
@@ -538,96 +306,140 @@ export default function ResidentsListPage({ onNavigateHome }) {
                   <EuiFilterButton
                     key={status}
                     hasActiveFilters={quickFilter === status}
-                    numFilters={RESIDENTS.filter((r) => r.status === status).length}
                     onClick={() => { setQuickFilter(status); setPageIndex(0); }}
+                    grow
                   >
                     {status}
                   </EuiFilterButton>
                 ))}
               </EuiFilterGroup>
-            </EuiFlexItem>
-          </EuiFlexGroup>
-
-          <EuiSpacer size="s" />
-
-          {/* ── Toolbar row 2: All Filters | Sort | Download | View toggle ── */}
-          <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
-            <EuiFlexItem grow={false}>
-              <EuiFilterGroup>
-                <EuiPopover
-                  button={
-                    <EuiFilterButton
-                      hasActiveFilters={activeFilterCount > 0}
-                      numActiveFilters={activeFilterCount > 0 ? activeFilterCount : undefined}
-                      iconType="arrowDown"
-                      iconSide="right"
-                      onClick={openFilterPopover}
-                    >
-                      All Filters
-                    </EuiFilterButton>
-                  }
-                  isOpen={isFilterOpen}
-                  closePopover={() => setIsFilterOpen(false)}
-                  panelPaddingSize="s"
-                  anchorPosition="downLeft"
-                >
-                  <EuiPopoverTitle>Filtering Options</EuiPopoverTitle>
-                  <FilterPanel
-                    filters={draftFilters}
-                    onChange={onFilterChange}
-                    invitedStart={draftInvitedStart}
-                    invitedEnd={draftInvitedEnd}
-                    onInvitedTimeChange={({ start, end }) => { setDraftInvitedStart(start); setDraftInvitedEnd(end); }}
-                    activeStart={draftActiveStart}
-                    activeEnd={draftActiveEnd}
-                    onActiveTimeChange={({ start, end }) => { setDraftActiveStart(start); setDraftActiveEnd(end); }}
+              <EuiSpacer size="s" />
+              <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+                <EuiFlexItem>
+                  <EuiSelect
+                    options={SORT_OPTIONS}
+                    value={`${sortField}_${sortDirection}`}
+                    onChange={onSortDropdownChange}
+                    aria-label="Sort residents"
                   />
-                  <EuiPopoverFooter>
-                    <EuiFlexGroup justifyContent="spaceBetween" responsive={false}>
-                      <EuiFlexItem grow={false}>
-                        <EuiButtonEmpty size="s" onClick={clearFilters}>Clear filters</EuiButtonEmpty>
-                      </EuiFlexItem>
-                      <EuiFlexItem grow={false}>
-                        <EuiButton size="s" fill onClick={applyFilters}>Apply filters</EuiButton>
-                      </EuiFlexItem>
-                    </EuiFlexGroup>
-                  </EuiPopoverFooter>
-                </EuiPopover>
-              </EuiFilterGroup>
-            </EuiFlexItem>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiButtonGroup
+                    legend="Toggle table or card view"
+                    options={VIEW_OPTIONS}
+                    idSelected={view}
+                    onChange={(id) => setView(id)}
+                    isIconOnly
+                  />
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </>
+          )}
 
-            <EuiFlexItem>
-              <EuiSelect
-                options={SORT_OPTIONS}
-                value={`${sortField}_${sortDirection}`}
-                onChange={onSortDropdownChange}
-                aria-label="Sort residents"
-              />
-            </EuiFlexItem>
+          {/* ── Toolbar: s/m/l — 2 rows ── */}
+          {isBelowXL && (
+            <>
+              <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+                <EuiFlexItem>
+                  <EuiFieldSearch
+                    placeholder="Search residents..."
+                    value={searchText}
+                    onChange={(e) => { setSearchText(e.target.value); setPageIndex(0); }}
+                    isClearable
+                  />
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiFilterGroup>
+                    <EuiFilterButton
+                      hasActiveFilters={quickFilter === 'All'}
+                      onClick={() => { setQuickFilter('All'); setPageIndex(0); }}
+                    >
+                      All
+                    </EuiFilterButton>
+                    {['Active', 'Invited', 'Created'].map((status) => (
+                      <EuiFilterButton
+                        key={status}
+                        hasActiveFilters={quickFilter === status}
+                        onClick={() => { setQuickFilter(status); setPageIndex(0); }}
+                      >
+                        {status}
+                      </EuiFilterButton>
+                    ))}
+                  </EuiFilterGroup>
+                </EuiFlexItem>
+              </EuiFlexGroup>
+              <EuiSpacer size="s" />
+              <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+                <EuiFlexItem>
+                  <EuiSelect
+                    options={SORT_OPTIONS}
+                    value={`${sortField}_${sortDirection}`}
+                    onChange={onSortDropdownChange}
+                    aria-label="Sort residents"
+                  />
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiButtonGroup
+                    legend="Toggle table or card view"
+                    options={VIEW_OPTIONS}
+                    idSelected={view}
+                    onChange={(id) => setView(id)}
+                    isIconOnly
+                  />
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </>
+          )}
 
-            <EuiFlexItem grow={false}>
-              <EuiButtonEmpty
-                iconType="download"
-                onClick={() =>
-                  downloadCSV(selectedItems.length > 0 ? selectedItems : filteredResidents)
-                }
-              >
-                {selectedItems.length > 0
-                  ? `Download ${selectedItems.length} selected`
-                  : 'Download all'}
-              </EuiButtonEmpty>
-            </EuiFlexItem>
-
-            <EuiFlexItem grow={false}>
-              <EuiButtonGroup
-                legend="Toggle table or card view"
-                options={VIEW_OPTIONS}
-                idSelected={view}
-                onChange={(id) => setView(id)}
-                isIconOnly
-              />
-            </EuiFlexItem>
-          </EuiFlexGroup>
+          {/* ── Toolbar: xl — 1 row ── */}
+          {!isXSmallScreen && !isBelowXL && (
+            <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+              <EuiFlexItem>
+                <EuiFieldSearch
+                  placeholder="Search residents..."
+                  value={searchText}
+                  onChange={(e) => { setSearchText(e.target.value); setPageIndex(0); }}
+                  isClearable
+                />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiFilterGroup>
+                  <EuiFilterButton
+                    hasActiveFilters={quickFilter === 'All'}
+                    onClick={() => { setQuickFilter('All'); setPageIndex(0); }}
+                  >
+                    All
+                  </EuiFilterButton>
+                  {['Active', 'Invited', 'Created'].map((status) => (
+                    <EuiFilterButton
+                      key={status}
+                      hasActiveFilters={quickFilter === status}
+                      onClick={() => { setQuickFilter(status); setPageIndex(0); }}
+                    >
+                      {status}
+                    </EuiFilterButton>
+                  ))}
+                </EuiFilterGroup>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiSelect
+                  options={SORT_OPTIONS}
+                  value={`${sortField}_${sortDirection}`}
+                  onChange={onSortDropdownChange}
+                  aria-label="Sort residents"
+                />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiButtonGroup
+                  legend="Toggle table or card view"
+                  options={VIEW_OPTIONS}
+                  idSelected={view}
+                  onChange={(id) => setView(id)}
+                  isIconOnly
+                />
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          )}
 
           <EuiSpacer size="m" />
 
@@ -672,15 +484,27 @@ export default function ResidentsListPage({ onNavigateHome }) {
                 <EuiSpacer size="m" />
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: isXSmallScreen ? '1fr' : isSmallScreen ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                  gridTemplateColumns: isXSmallScreen ? 'repeat(2, 1fr)' : isSmallScreen ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
                   gap: euiTheme.size.l,
+                  width: '100%',
                 }}>
                   {filteredResidents.map((resident) => {
                     const statusCfg = STATUS_CONFIG[resident.status];
                     const isSelected = selectedItems.some((s) => s.id === resident.id);
-                    const fieldBorder = { borderBottom: `1px solid ${euiTheme.colors.borderBasePlain}`, padding: `${euiTheme.size.s} ${euiTheme.size.base}` };
+                    const fieldBorder = { borderBottom: `1px solid ${euiTheme.colors.borderBasePlain}`, padding: `${euiTheme.size.s} 0`, wordBreak: 'break-word' };
+                    const fieldLast  = { padding: `${euiTheme.size.s} 0`, wordBreak: 'break-word' };
                     return (
-                      <EuiPanel key={resident.id} hasBorder paddingSize="none">
+                      <EuiPanel key={resident.id} paddingSize="none" css={{
+                        minWidth: 0,
+                        border: isSelected
+                          ? `1px solid ${euiTheme.colors.borderStrongPrimary}`
+                          : euiTheme.border.thin,
+                        borderRadius: euiTheme.border.radius.small,
+                        backgroundColor: isSelected
+                          ? euiTheme.colors.backgroundBaseInteractiveSelect
+                          : undefined,
+                        transition: 'background-color 150ms ease, border-color 150ms ease',
+                      }}>
 
                         {/* Control row: checkbox + actions */}
                         <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" gutterSize="none" responsive={false} style={{ padding: `${euiTheme.size.s} ${euiTheme.size.base}` }}>
@@ -703,49 +527,54 @@ export default function ResidentsListPage({ onNavigateHome }) {
                           </EuiFlexItem>
                         </EuiFlexGroup>
 
-                        {/* Name + status */}
-                        <div style={fieldBorder}>
-                          <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" gutterSize="none" responsive={false}>
-                            <EuiFlexItem grow={false}>
-                              <EuiText size="xs" color="subdued">Resident</EuiText>
-                            </EuiFlexItem>
-                            <EuiFlexItem grow={false}>
-                              <EuiBadge color={statusCfg.color}>{statusCfg.label}</EuiBadge>
-                            </EuiFlexItem>
-                          </EuiFlexGroup>
-                          <EuiText size="m">{`${resident.firstName} ${resident.lastName}`}</EuiText>
-                        </div>
+                        {/* Field rows — horizontal padding here insets all field borders */}
+                        <div style={{ padding: `0 ${euiTheme.size.base}` }}>
 
-                        {/* Email */}
-                        <div style={fieldBorder}>
-                          <EuiText size="xs" color="subdued">Email</EuiText>
-                          <EuiText size="s">
-                            {resident.email
-                              ? <EuiLink href={`mailto:${resident.email}`}>{resident.email}</EuiLink>
-                              : '—'}
-                          </EuiText>
-                        </div>
+                          {/* Name + status */}
+                          <div style={fieldBorder}>
+                            <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" gutterSize="none" responsive={false}>
+                              <EuiFlexItem grow={false}>
+                                <EuiText size="xs" color="subdued">Resident</EuiText>
+                              </EuiFlexItem>
+                              <EuiFlexItem grow={false}>
+                                <EuiBadge color={statusCfg.color}>{statusCfg.label}</EuiBadge>
+                              </EuiFlexItem>
+                            </EuiFlexGroup>
+                            <EuiText size="m">{`${resident.firstName} ${resident.lastName}`}</EuiText>
+                          </div>
 
-                        {/* Phone */}
-                        <div style={fieldBorder}>
-                          <EuiText size="xs" color="subdued">Phone</EuiText>
-                          <EuiText size="s">
-                            {resident.phone
-                              ? <EuiLink href={`tel:${resident.phone}`}>{resident.phone}</EuiLink>
-                              : '—'}
-                          </EuiText>
-                        </div>
+                          {/* Email */}
+                          <div style={fieldBorder}>
+                            <EuiText size="xs" color="subdued">Email</EuiText>
+                            <EuiText size="s">
+                              {resident.email
+                                ? <EuiLink href={`mailto:${resident.email}`}>{resident.email}</EuiLink>
+                                : '—'}
+                            </EuiText>
+                          </div>
 
-                        {/* Last Invited */}
-                        <div style={fieldBorder}>
-                          <EuiText size="xs" color="subdued">Last Invited</EuiText>
-                          <EuiText size="s">{resident.lastInvited ?? '—'}</EuiText>
-                        </div>
+                          {/* Phone */}
+                          <div style={fieldBorder}>
+                            <EuiText size="xs" color="subdued">Phone</EuiText>
+                            <EuiText size="s">
+                              {resident.phone
+                                ? <EuiLink href={`tel:${resident.phone}`}>{resident.phone}</EuiLink>
+                                : '—'}
+                            </EuiText>
+                          </div>
 
-                        {/* Channel */}
-                        <div style={{ padding: `${euiTheme.size.s} ${euiTheme.size.base}` }}>
-                          <EuiText size="xs" color="subdued">Channel</EuiText>
-                          <EuiText size="s">{resident.channel ?? '—'}</EuiText>
+                          {/* Last Invited */}
+                          <div style={fieldBorder}>
+                            <EuiText size="xs" color="subdued">Last Invited</EuiText>
+                            <EuiText size="s">{resident.lastInvited ?? '—'}</EuiText>
+                          </div>
+
+                          {/* Channel */}
+                          <div style={fieldLast}>
+                            <EuiText size="xs" color="subdued">Channel</EuiText>
+                            <EuiText size="s">{resident.channel ?? '—'}</EuiText>
+                          </div>
+
                         </div>
 
                       </EuiPanel>
@@ -761,53 +590,101 @@ export default function ResidentsListPage({ onNavigateHome }) {
 
       {/* ── Sticky footer — bulk actions ── */}
       {selectedItems.length > 0 && (
-        <EuiBottomBar position="sticky" paddingSize="m" color="plain">
-          <EuiFlexGroup alignItems="center" justifyContent="spaceBetween" responsive={false}>
-            <EuiFlexItem grow={false}>
-              <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+        <EuiBottomBar
+          position="sticky"
+          paddingSize="none"
+          style={{
+            backgroundColor: euiTheme.colors.emptyShade,
+            borderTop: euiTheme.border.thin,
+            boxShadow: 'none',
+          }}
+        >
+          <EuiThemeProvider colorMode="LIGHT">
+          {/* ── xs: stacked ── */}
+          {isXSmallScreen ? (
+            <div style={{ padding: euiTheme.size.m }}>
+              <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
+                <EuiFlexItem grow={false}>
+                  <EuiButtonIcon iconType="cross" aria-label="Clear selection" onClick={clearSelection} color="text" />
+                </EuiFlexItem>
                 <EuiFlexItem grow={false}>
                   <EuiText size="s">
-                    <strong>
-                      {selectedItems.length} resident{selectedItems.length !== 1 ? 's' : ''} selected
-                    </strong>
+                    <strong>{selectedItems.length} resident{selectedItems.length !== 1 ? 's' : ''} selected</strong>
                   </EuiText>
                 </EuiFlexItem>
                 {selectedItems.length < filteredResidents.length && (
                   <EuiFlexItem grow={false}>
                     <EuiLink onClick={() => setSelectedItems([...filteredResidents])}>
-                      Select all {filteredResidents.length} residents
+                      Select all {filteredResidents.length.toLocaleString()}
                     </EuiLink>
                   </EuiFlexItem>
                 )}
               </EuiFlexGroup>
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
-                <EuiFlexItem grow={false}>
-                  <EuiButton size="s" iconType="email" onClick={() => console.log('invite', selectedItems.map((r) => r.id))}>
+              <EuiSpacer size="s" />
+              <EuiFlexGroup gutterSize="s" responsive={false}>
+                <EuiFlexItem>
+                  <EuiButton fullWidth iconType="email" onClick={() => console.log('invite', selectedItems.map((r) => r.id))}>
                     Invite
                   </EuiButton>
                 </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiButton size="s" onClick={() => downloadCSV(selectedItems)}>Export</EuiButton>
+                <EuiFlexItem>
+                  <EuiButton fullWidth iconType="exportAction" onClick={() => console.log('export', selectedItems.map((r) => r.id))}>
+                    Export
+                  </EuiButton>
                 </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiButton
-                    size="s"
-                    color="danger"
-                    onClick={() => console.log('delete', selectedItems.map((r) => r.id))}
-                  >
+                <EuiFlexItem>
+                  <EuiButton fullWidth color="danger" iconType="trash" onClick={() => console.log('delete', selectedItems.map((r) => r.id))}>
                     Delete
                   </EuiButton>
                 </EuiFlexItem>
+              </EuiFlexGroup>
+            </div>
+          ) : (
+            /* ── s+: single row ── */
+            <div style={{ padding: `${euiTheme.size.s} ${euiTheme.size.m}` }}>
+              <EuiFlexGroup alignItems="center" justifyContent="spaceBetween" responsive={false}>
                 <EuiFlexItem grow={false}>
-                  <EuiButtonEmpty size="s" onClick={clearSelection}>
-                    Clear selection
-                  </EuiButtonEmpty>
+                  <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
+                    <EuiFlexItem grow={false}>
+                      <EuiButtonIcon iconType="cross" aria-label="Clear selection" onClick={clearSelection} color="text" />
+                    </EuiFlexItem>
+                    <EuiFlexItem grow={false}>
+                      <EuiText size="s">
+                        <strong>{selectedItems.length} resident{selectedItems.length !== 1 ? 's' : ''} selected</strong>
+                      </EuiText>
+                    </EuiFlexItem>
+                    {selectedItems.length < filteredResidents.length && (
+                      <EuiFlexItem grow={false}>
+                        <EuiLink onClick={() => setSelectedItems([...filteredResidents])}>
+                          Select all {filteredResidents.length.toLocaleString()}
+                        </EuiLink>
+                      </EuiFlexItem>
+                    )}
+                  </EuiFlexGroup>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiFlexGroup gutterSize="s" responsive={false}>
+                    <EuiFlexItem grow={false}>
+                      <EuiButton iconType="email" onClick={() => console.log('invite', selectedItems.map((r) => r.id))}>
+                        Invite
+                      </EuiButton>
+                    </EuiFlexItem>
+                    <EuiFlexItem grow={false}>
+                      <EuiButton iconType="exportAction" onClick={() => console.log('export', selectedItems.map((r) => r.id))}>
+                        Export
+                      </EuiButton>
+                    </EuiFlexItem>
+                    <EuiFlexItem grow={false}>
+                      <EuiButton color="danger" iconType="trash" onClick={() => console.log('delete', selectedItems.map((r) => r.id))}>
+                        Delete
+                      </EuiButton>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
                 </EuiFlexItem>
               </EuiFlexGroup>
-            </EuiFlexItem>
-          </EuiFlexGroup>
+            </div>
+          )}
+          </EuiThemeProvider>
         </EuiBottomBar>
       )}
     </>
