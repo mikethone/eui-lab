@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd my-eui-app && npm run build",
+  "outputDirectory": "my-eui-app/dist",
+  "installCommand": "cd my-eui-app && npm install",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
