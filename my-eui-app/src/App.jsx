@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import {
   EuiPageTemplate,
   EuiCard,
@@ -59,7 +60,8 @@ const PAGES = [
   },
 ];
 
-function HomePage({ onNavigate }) {
+function HomePage() {
+  const navigate = useNavigate();
   return (
     <EuiPageTemplate>
       <EuiPageTemplate.Header
@@ -75,7 +77,7 @@ function HomePage({ onNavigate }) {
                 icon={<EuiIcon type={page.icon} size="xl" />}
                 title={page.title}
                 description={page.description}
-                onClick={() => onNavigate(page.id)}
+                onClick={() => navigate(`/${page.id}`)}
               />
             </EuiFlexItem>
           ))}
@@ -85,30 +87,26 @@ function HomePage({ onNavigate }) {
   );
 }
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-
-  const navigateHome = () => setCurrentPage('home');
+export default function App() {
+  const navigate = useNavigate();
+  const goHome = () => navigate('/');
 
   return (
-    <>
-      {currentPage === 'home' && (
-        <HomePage onNavigate={(id) => setCurrentPage(id)} />
-      )}
-      {currentPage === 'form' && <FormPage onNavigateHome={navigateHome} />}
-      {currentPage === 'issue-form' && <IssueFormPage onNavigateHome={navigateHome} />}
-      {currentPage === 'issues-list' && (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/form" element={<FormPage onNavigateHome={goHome} />} />
+      <Route path="/issue-form" element={<IssueFormPage onNavigateHome={goHome} />} />
+      <Route path="/issues-list" element={
         <IssuesListPage
-          onNavigateHome={navigateHome}
-          onNavigateToIssueForm={() => setCurrentPage('issue-form')}
+          onNavigateHome={goHome}
+          onNavigateToIssueForm={() => navigate('/issue-form')}
         />
-      )}
-      {currentPage === 'residents' && <ResidentsListPage onNavigateHome={navigateHome} />}
-      {currentPage === 'residents-alt' && <ResidentsListAltPage onNavigateHome={navigateHome} />}
-      {currentPage === 'residents-datagrid' && <ResidentsDataGridPage onNavigateHome={navigateHome} />}
-      {currentPage === 'tokens' && <TokensPage onNavigateHome={navigateHome} />}
-    </>
+      } />
+      <Route path="/residents" element={<ResidentsListPage onNavigateHome={goHome} />} />
+      <Route path="/residents-alt" element={<ResidentsListAltPage onNavigateHome={goHome} />} />
+      <Route path="/residents-datagrid" element={<ResidentsDataGridPage onNavigateHome={goHome} />} />
+      <Route path="/tokens" element={<TokensPage onNavigateHome={goHome} />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
-
-export default App;
