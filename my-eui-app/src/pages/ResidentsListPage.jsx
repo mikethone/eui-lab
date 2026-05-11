@@ -17,6 +17,10 @@ import {
   EuiFieldSearch,
   EuiFilterButton,
   EuiFilterGroup,
+  EuiFlyout,
+  EuiFlyoutBody,
+  EuiFlyoutHeader,
+  EuiGlobalToastList,
   EuiFlexGroup,
   EuiFlexItem,
   EuiIcon,
@@ -26,6 +30,7 @@ import {
   EuiSpacer,
   EuiText,
   EuiThemeProvider,
+  EuiTitle,
 } from '@elastic/eui';
 import { RESIDENTS } from '../data/residents';
 
@@ -122,9 +127,10 @@ function RowActionsPopover({ item }) {
 
 export default function ResidentsListPage({ onNavigateHome }) {
   const { euiTheme } = useEuiTheme();
-  const isXSmallScreen = useIsWithinBreakpoints(['xs']);
-  const isSmallScreen  = useIsWithinBreakpoints(['s']);         // card grid only
-  const isBelowXL      = useIsWithinBreakpoints(['s', 'm', 'l']); // toolbar 2-row
+  const isXS      = useIsWithinBreakpoints(['xs']);
+  const isSM      = useIsWithinBreakpoints(['s', 'm']);
+  const isLXL     = useIsWithinBreakpoints(['l', 'xl']);
+  const isBelowXL = useIsWithinBreakpoints(['xs', 's', 'm', 'l']);
 
   const [view, setView]                   = useState('table');
   const [searchText, setSearchText]       = useState('');
@@ -134,6 +140,21 @@ export default function ResidentsListPage({ onNavigateHome }) {
   const [sortField, setSortField]         = useState('lastName');
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedItems, setSelectedItems] = useState([]);
+  const [filterFlyoutOpen, setFilterFlyoutOpen] = useState(false);
+  const [toasts, setToasts] = useState([]);
+
+  const addResidentDetailToast = (resident) => {
+    setToasts((prev) => [
+      ...prev,
+      {
+        id: `detail-${resident.id}-${Date.now()}`,
+        title: `${resident.firstName} ${resident.lastName}`,
+        text: <p>Would open Resident Detail page</p>,
+        color: 'primary',
+      },
+    ]);
+  };
+  const dismissToast = (removed) => setToasts((prev) => prev.filter((t) => t.id !== removed.id));
 
   // ── Handlers ──
 
@@ -283,120 +304,78 @@ export default function ResidentsListPage({ onNavigateHome }) {
 
         <EuiPageTemplate.Section css={{ minWidth: 0 }}>
 
-          {/* ── Toolbar: xs — 3 rows ── */}
-          {isXSmallScreen && (
-            <>
-              <EuiFieldSearch
-                placeholder="Search residents..."
-                value={searchText}
-                onChange={(e) => { setSearchText(e.target.value); setPageIndex(0); }}
-                isClearable
-                fullWidth
-              />
-              <EuiSpacer size="s" />
-              <EuiFilterGroup fullWidth>
-                <EuiFilterButton
-                  hasActiveFilters={quickFilter === 'All'}
-                  onClick={() => { setQuickFilter('All'); setPageIndex(0); }}
-                  grow
-                >
-                  All
-                </EuiFilterButton>
-                {['Active', 'Invited', 'Created'].map((status) => (
-                  <EuiFilterButton
-                    key={status}
-                    hasActiveFilters={quickFilter === status}
-                    onClick={() => { setQuickFilter(status); setPageIndex(0); }}
-                    grow
-                  >
-                    {status}
-                  </EuiFilterButton>
-                ))}
-              </EuiFilterGroup>
-              <EuiSpacer size="s" />
-              <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
-                <EuiFlexItem>
-                  <EuiSelect
-                    options={SORT_OPTIONS}
-                    value={`${sortField}_${sortDirection}`}
-                    onChange={onSortDropdownChange}
-                    aria-label="Sort residents"
-                  />
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiButtonGroup
-                    legend="Toggle table or card view"
-                    options={VIEW_OPTIONS}
-                    idSelected={view}
-                    onChange={(id) => setView(id)}
-                    isIconOnly
-                  />
-                </EuiFlexItem>
-              </EuiFlexGroup>
-            </>
-          )}
-
-          {/* ── Toolbar: s/m/l — 2 rows ── */}
+          {/* ── Toolbar: < xl — search + filter button ── */}
           {isBelowXL && (
-            <>
-              <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
-                <EuiFlexItem>
-                  <EuiFieldSearch
-                    placeholder="Search residents..."
-                    value={searchText}
-                    onChange={(e) => { setSearchText(e.target.value); setPageIndex(0); }}
-                    isClearable
-                  />
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiFilterGroup>
-                    <EuiFilterButton
-                      hasActiveFilters={quickFilter === 'All'}
-                      onClick={() => { setQuickFilter('All'); setPageIndex(0); }}
-                    >
-                      All
-                    </EuiFilterButton>
-                    {['Active', 'Invited', 'Created'].map((status) => (
-                      <EuiFilterButton
-                        key={status}
-                        hasActiveFilters={quickFilter === status}
-                        onClick={() => { setQuickFilter(status); setPageIndex(0); }}
-                      >
-                        {status}
-                      </EuiFilterButton>
-                    ))}
-                  </EuiFilterGroup>
-                </EuiFlexItem>
-              </EuiFlexGroup>
-              <EuiSpacer size="s" />
-              <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
-                <EuiFlexItem>
-                  <EuiSelect
-                    options={SORT_OPTIONS}
-                    value={`${sortField}_${sortDirection}`}
-                    onChange={onSortDropdownChange}
-                    aria-label="Sort residents"
-                  />
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiButtonGroup
-                    legend="Toggle table or card view"
-                    options={VIEW_OPTIONS}
-                    idSelected={view}
-                    onChange={(id) => setView(id)}
-                    isIconOnly
-                  />
-                </EuiFlexItem>
-              </EuiFlexGroup>
-            </>
-          )}
-
-          {/* ── Toolbar: xl — 1 row ── */}
-          {!isXSmallScreen && !isBelowXL && (
             <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
               <EuiFlexItem>
                 <EuiFieldSearch
-                  placeholder="Search residents..."
+                  placeholder="Search"
+                  value={searchText}
+                  onChange={(e) => { setSearchText(e.target.value); setPageIndex(0); }}
+                  isClearable
+                  fullWidth
+                />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiButtonEmpty iconType="filter" onClick={() => setFilterFlyoutOpen(true)}>
+                  Filter
+                </EuiButtonEmpty>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          )}
+
+          {/* ── Filter flyout (< xl) ── */}
+          {filterFlyoutOpen && (
+            <EuiFlyout onClose={() => setFilterFlyoutOpen(false)} size="s" aria-labelledby="resident-filter-title">
+              <EuiFlyoutHeader hasBorder>
+                <EuiTitle size="m"><h2 id="resident-filter-title">Filter &amp; Sort</h2></EuiTitle>
+              </EuiFlyoutHeader>
+              <EuiFlyoutBody>
+                <EuiFilterGroup fullWidth>
+                  <EuiFilterButton
+                    hasActiveFilters={quickFilter === 'All'}
+                    onClick={() => { setQuickFilter('All'); setPageIndex(0); }}
+                    grow
+                  >
+                    All
+                  </EuiFilterButton>
+                  {['Active', 'Invited', 'Created'].map((status) => (
+                    <EuiFilterButton
+                      key={status}
+                      hasActiveFilters={quickFilter === status}
+                      onClick={() => { setQuickFilter(status); setPageIndex(0); }}
+                      grow
+                    >
+                      {status}
+                    </EuiFilterButton>
+                  ))}
+                </EuiFilterGroup>
+                <EuiSpacer size="m" />
+                <EuiSelect
+                  options={SORT_OPTIONS}
+                  value={`${sortField}_${sortDirection}`}
+                  onChange={onSortDropdownChange}
+                  aria-label="Sort residents"
+                  fullWidth
+                />
+                <EuiSpacer size="m" />
+                <EuiButtonGroup
+                  legend="Toggle table or card view"
+                  options={VIEW_OPTIONS}
+                  idSelected={view}
+                  onChange={(id) => setView(id)}
+                  isIconOnly
+                />
+              </EuiFlyoutBody>
+            </EuiFlyout>
+          )}
+
+          {/* ── Toolbar: xl+ — 1 row ── */}
+          {!isBelowXL && (
+            <EuiFlexGroup gutterSize="m" alignItems="center" responsive={false}>
+              <EuiFlexItem>
+                <EuiFieldSearch
+                  placeholder="Search"
                   value={searchText}
                   onChange={(e) => { setSearchText(e.target.value); setPageIndex(0); }}
                   isClearable
@@ -484,31 +463,49 @@ export default function ResidentsListPage({ onNavigateHome }) {
                 <EuiSpacer size="m" />
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: isXSmallScreen ? 'repeat(2, 1fr)' : isSmallScreen ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
+                  gridTemplateColumns: isXS ? '1fr' : isSM ? 'repeat(2, 1fr)' : isLXL ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
                   gap: euiTheme.size.l,
                   width: '100%',
                 }}>
                   {filteredResidents.map((resident) => {
-                    const statusCfg = STATUS_CONFIG[resident.status];
                     const isSelected = selectedItems.some((s) => s.id === resident.id);
-                    const fieldBorder = { borderBottom: `1px solid ${euiTheme.colors.borderBasePlain}`, padding: `${euiTheme.size.s} 0`, wordBreak: 'break-word' };
-                    const fieldLast  = { padding: `${euiTheme.size.s} 0`, wordBreak: 'break-word' };
+                    const statusBorderColor = {
+                      Active:  euiTheme.colors.success,
+                      Invited: euiTheme.colors.warning,
+                      Created: euiTheme.colors.borderBasePlain,
+                    }[resident.status] ?? euiTheme.colors.borderBasePlain;
+                    const statusTextColor = {
+                      Active:  euiTheme.colors.success,
+                      Invited: euiTheme.colors.warning,
+                      Created: euiTheme.colors.textSubdued,
+                    }[resident.status] ?? euiTheme.colors.textSubdued;
+                    const nameFontSize = euiTheme.font.scale.l * euiTheme.base;
                     return (
-                      <EuiPanel key={resident.id} paddingSize="none" css={{
-                        minWidth: 0,
-                        border: isSelected
-                          ? `1px solid ${euiTheme.colors.borderStrongPrimary}`
-                          : euiTheme.border.thin,
-                        borderRadius: euiTheme.border.radius.small,
-                        backgroundColor: isSelected
-                          ? euiTheme.colors.backgroundBaseInteractiveSelect
-                          : undefined,
-                        transition: 'background-color 150ms ease, border-color 150ms ease',
-                      }}>
-
-                        {/* Control row: checkbox + actions */}
-                        <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" gutterSize="none" responsive={false} style={{ padding: `${euiTheme.size.s} ${euiTheme.size.base}` }}>
-                          <EuiFlexItem grow={false}>
+                      <EuiPanel
+                        key={resident.id}
+                        paddingSize="none"
+                        onClick={() => addResidentDetailToast(resident)}
+                        css={{
+                          minWidth: 0,
+                          cursor: 'pointer',
+                          border: isSelected
+                            ? `1px solid ${euiTheme.colors.borderStrongPrimary}`
+                            : euiTheme.border.thin,
+                          borderLeft: `4px solid ${statusBorderColor}`,
+                          borderRadius: euiTheme.border.radius.small,
+                          backgroundColor: isSelected
+                            ? euiTheme.colors.backgroundBaseInteractiveSelect
+                            : undefined,
+                          transition: 'background-color 150ms ease, border-color 150ms ease',
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          padding: `${euiTheme.size.s} ${euiTheme.size.m}`,
+                        }}>
+                          {/* Checkbox */}
+                          <div style={{ flexShrink: 0, paddingTop: 2 }} onClick={(e) => e.stopPropagation()}>
                             <EuiCheckbox
                               id={`card-select-${resident.id}`}
                               checked={isSelected}
@@ -521,62 +518,35 @@ export default function ResidentsListPage({ onNavigateHome }) {
                               }
                               aria-label={`Select ${resident.firstName} ${resident.lastName}`}
                             />
-                          </EuiFlexItem>
-                          <EuiFlexItem grow={false}>
+                          </div>
+
+                          {/* Text content */}
+                          <div style={{ flex: 1, minWidth: 0, marginLeft: euiTheme.size.s, textAlign: 'left', }}>
+                            <EuiText css={{ color: statusTextColor, fontWeight: euiTheme.font.weight.bold, fontSize:'12px', }}>
+                              {resident.status.toUpperCase()}
+                            </EuiText>
+                            <EuiText css={{
+                              fontSize: nameFontSize,
+                              fontWeight: euiTheme.font.weight.bold,
+                              color: euiTheme.colors.textHeading,
+                            }}>
+                              {resident.firstName} {resident.lastName}
+                            </EuiText>
+                            {resident.phone && (
+                              <EuiText css={{ fontSize: nameFontSize, color: euiTheme.colors.textSubdued }}>
+                                {resident.phone}
+                              </EuiText>
+                            )}
+                            {resident.email && (
+                              <EuiText size="s" color="subdued">{resident.email}</EuiText>
+                            )}
+                          </div>
+
+                          {/* Gear icon */}
+                          <div style={{ flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                             <RowActionsPopover item={resident} />
-                          </EuiFlexItem>
-                        </EuiFlexGroup>
-
-                        {/* Field rows — horizontal padding here insets all field borders */}
-                        <div style={{ padding: `0 ${euiTheme.size.base}` }}>
-
-                          {/* Name + status */}
-                          <div style={fieldBorder}>
-                            <EuiFlexGroup justifyContent="spaceBetween" alignItems="center" gutterSize="none" responsive={false}>
-                              <EuiFlexItem grow={false}>
-                                <EuiText size="xs" color="subdued">Resident</EuiText>
-                              </EuiFlexItem>
-                              <EuiFlexItem grow={false}>
-                                <EuiBadge color={statusCfg.color}>{statusCfg.label}</EuiBadge>
-                              </EuiFlexItem>
-                            </EuiFlexGroup>
-                            <EuiText size="m">{`${resident.firstName} ${resident.lastName}`}</EuiText>
                           </div>
-
-                          {/* Email */}
-                          <div style={fieldBorder}>
-                            <EuiText size="xs" color="subdued">Email</EuiText>
-                            <EuiText size="s">
-                              {resident.email
-                                ? <EuiLink href={`mailto:${resident.email}`}>{resident.email}</EuiLink>
-                                : '—'}
-                            </EuiText>
-                          </div>
-
-                          {/* Phone */}
-                          <div style={fieldBorder}>
-                            <EuiText size="xs" color="subdued">Phone</EuiText>
-                            <EuiText size="s">
-                              {resident.phone
-                                ? <EuiLink href={`tel:${resident.phone}`}>{resident.phone}</EuiLink>
-                                : '—'}
-                            </EuiText>
-                          </div>
-
-                          {/* Last Invited */}
-                          <div style={fieldBorder}>
-                            <EuiText size="xs" color="subdued">Last Invited</EuiText>
-                            <EuiText size="s">{resident.lastInvited ?? '—'}</EuiText>
-                          </div>
-
-                          {/* Channel */}
-                          <div style={fieldLast}>
-                            <EuiText size="xs" color="subdued">Channel</EuiText>
-                            <EuiText size="s">{resident.channel ?? '—'}</EuiText>
-                          </div>
-
                         </div>
-
                       </EuiPanel>
                     );
                   })}
@@ -601,7 +571,7 @@ export default function ResidentsListPage({ onNavigateHome }) {
         >
           <EuiThemeProvider colorMode="LIGHT">
           {/* ── xs: stacked ── */}
-          {isXSmallScreen ? (
+          {isXS ? (
             <div style={{ padding: euiTheme.size.m }}>
               <EuiFlexGroup gutterSize="s" alignItems="center" responsive={false}>
                 <EuiFlexItem grow={false}>
@@ -687,6 +657,7 @@ export default function ResidentsListPage({ onNavigateHome }) {
           </EuiThemeProvider>
         </EuiBottomBar>
       )}
+      <EuiGlobalToastList toasts={toasts} dismissToast={dismissToast} toastLifeTimeMs={4000} />
     </>
   );
 }
