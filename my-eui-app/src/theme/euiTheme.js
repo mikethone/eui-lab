@@ -14,29 +14,29 @@
 // ─── Shade ramp — PM neutral grays mapped to Borealis 7-step scale ───────────
 // Borealis defaults have a blue-gray cast; PM uses neutral grays.
 export const shade = {
-  emptyShade:    '#FFFFFF',  // white
-  lightestShade: '#F8FAFB',  // backgroundGray
-  lightShade:    '#CCD3D9',  // gray400
-  mediumShade:   '#AEB6BD',  // gray500
-  darkShade:     '#6B757D',  // gray600
-  darkestShade:  '#343A40',  // gray800
-  fullShade:     '#0C0D0D',  // gray900
+  emptyShade:    '#FFFFFF',
+  lightestShade: '#F2F5F7',  
+  lightShade:    '#DBE0E6',  
+  mediumShade:   '#AFB8C0',  
+  darkShade:     '#6D7883',  
+  darkestShade:  '#373D43', 
+  fullShade:     '#171A1C',
 };
 
 // ─── Brand Blue ramp — 11-step primary blue scale (50–950) ───────────────────
 // 0 = white, 1000 = black. PM brand values anchored; remainder interpolated.
 export const brandBlue = {
-  50:  '#F8FBFD',  // PM lightBlue
-  100: '#E6F2FF',  // PM veryLightBlue
-  200: '#D1ECFF',
-  300: '#B0E3FF',  // PMS 2975c
-  400: '#7ABDE8',
+  50:  '#F4F8FA',  
+  100: '#DDE9F4',  
+  200: '#B6D3ED',
+  300: '#83B8E7',  
+  400: '#4C93E5',
   500: '#1175CC',  // PM meldBlue — primary
-  600: '#0B4980',  // PM darkHover
-  700: '#074470',
-  800: '#053A54',
-  900: '#022935',  // PMS 547c
-  950: '#011820',
+  600: '#0C5697', 
+  700: '#093E6D',
+  800: '#062847',
+  900: '#03182A',  
+  950: '#020D18',
 };
 
 export const pmTheme = {

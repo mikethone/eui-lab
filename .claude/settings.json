@@ -4,7 +4,17 @@
       "Bash(find /Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui -name *.d.ts -path *provider*)",
       "Bash(find /Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-common -name *.d.ts)",
       "Bash(node -e \"const t = require\\('/Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-borealis/lib/eui_theme_borealis_light.json'\\); console.log\\(JSON.stringify\\(t.breakpoint || t.breakpoints || Object.keys\\(t\\)\\)\\)\")",
-      "Bash(node -e \"const t = require\\('/Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-borealis/lib/eui_theme_borealis_light.json'\\); console.log\\(JSON.stringify\\(t.euiBreakpoints\\)\\)\")"
+      "Bash(node -e \"const t = require\\('/Users/mikethone/Documents/GitHub/eui-lab/my-eui-app/node_modules/@elastic/eui-theme-borealis/lib/eui_theme_borealis_light.json'\\); console.log\\(JSON.stringify\\(t.euiBreakpoints\\)\\)\")",
+      "mcp__figma__search_design_system",
+      "Bash(open \"http://localhost:5173/issues-list#figmacapture=d51b5428-8dc2-4821-acbf-e7177a12c041&figmaendpoint=https%3A%2F%2Fmcp.figma.com%2Fmcp%2Fcapture%2Fd51b5428-8dc2-4821-acbf-e7177a12c041%2Fsubmit&figmadelay=10000\")",
+      "mcp__figma__use_figma",
+      "mcp__figma__generate_figma_design",
+      "mcp__figma__get_screenshot",
+      "Bash(curl -s -o /tmp/issues_capture.png \"https://www.figma.com/api/mcp/asset/6f23924e-9f3b-40ba-bdf8-d6a5e80e92da\")",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -s -o /tmp/issues_frame.png \"https://www.figma.com/api/mcp/asset/06cbc2e0-9e75-47da-8d8d-63fdc72e8e42\")",
+      "Bash(curl -s -o /tmp/toolbar_section.png \"https://www.figma.com/api/mcp/asset/33351611-39b5-4fee-8ecd-64ab89e5eadc\")"
     ]
   }
 }
