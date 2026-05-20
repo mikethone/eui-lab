@@ -1,0 +1,177 @@
+{
+  "id": 1196654,
+  "property_groups": [
+    {
+      "id": 23999,
+      "created": "2024-08-27T18:34:54.365867Z",
+      "create_by": null,
+      "updated": "2026-04-29T00:27:03.163162Z",
+      "update_by": null,
+      "name": "AHS Opt-in - Tiffany Montoya"
+    },
+    {
+      "id": 24214,
+      "created": "2024-09-12T15:07:19.040725Z",
+      "create_by": null,
+      "updated": "2026-05-13T04:29:56.525678Z",
+      "update_by": null,
+      "name": "AHS Opt-in"
+    },
+    {
+      "id": 26021,
+      "created": "2025-02-08T08:49:01.716617Z",
+      "create_by": null,
+      "updated": "2026-05-13T04:23:27.349615Z",
+      "update_by": null,
+      "name": "Atlas - All Properties (w/Offboarding)"
+    },
+    {
+      "id": 26023,
+      "created": "2025-02-08T08:58:37.148082Z",
+      "create_by": null,
+      "updated": "2026-04-29T00:26:35.665351Z",
+      "update_by": null,
+      "name": "Phoenix - All Properties"
+    },
+    {
+      "id": 28732,
+      "created": "2025-10-20T16:19:24.540803Z",
+      "create_by": { "org_type": "m", "persona_id": 45309 },
+      "updated": "2025-10-20T16:19:24.540844Z",
+      "update_by": { "org_type": "m", "persona_id": 45309 },
+      "name": "3rd-Party Opt-In"
+    }
+  ],
+  "units": [
+    {
+      "building": null,
+      "floor": null,
+      "apartment": "",
+      "suite": "",
+      "unit": "1753 W Brown St",
+      "room": "",
+      "department": "",
+      "id": 1452400,
+      "is_active": true
+    },
+    {
+      "building": null,
+      "floor": null,
+      "apartment": "",
+      "suite": "",
+      "unit": "10017 N 18th Ave",
+      "room": "",
+      "department": "",
+      "id": 1452346,
+      "is_active": true
+    }
+  ],
+  "owners": [
+    {
+      "id": 690406,
+      "created": "2024-08-23T22:39:23.131304Z",
+      "create_by": null,
+      "updated": "2026-05-13T07:11:18.327117Z",
+      "update_by": null,
+      "is_active": true,
+      "hub_access_level": "DIRECT_ONLY",
+      "email": "annabkim@gmail.com",
+      "received_welcome_email": false,
+      "invited_to_hub": false,
+      "first_name": "Anna",
+      "last_name": "Choi",
+      "contact": 3894072,
+      "address": null,
+      "management": 2857,
+      "user": null,
+      "new_notification_settings": 566320
+    }
+  ],
+  "propertyware_property": null,
+  "rent_manager_property": null,
+  "buildium_property_link": null,
+  "appfolio_property_link": {
+    "id": 213488,
+    "af_property": {
+      "Id": "dfe4cde6-8e81-11ec-9d00-0add6b238094",
+      "Zip": "85021",
+      "City": "Phoenix",
+      "Name": "10017 N 18th Avenue & 1753 W Brown Street",
+      "State": "AZ",
+      "Address1": "10017 N 18th Avenue & 1753 W Brown Street",
+      "Address2": "",
+      "HiddenAt": null,
+      "YearBuilt": 1961,
+      "PropertyType": "Multi-Family",
+      "LastUpdatedAt": "2026-02-04T20:18:46Z",
+      "MaintenanceLimit": "400.0",
+      "MaintenanceNotes": "Safeco Insurance Company of America\r\nPolicy # OZ5269712\r\n***********************************\r\n: Any work needed over $150.00 will require approval from the Property Manager to complete. Any work completed without approval may be denied payment. Please contact your PM at 480-277-5131 for approval.\r\n\r\nHVAC Under warranty with Heaths Air. All Appliances Under 1 Year Warranty with Spencer's\r\nRoof Under warranty with Five Guys Roofing. ",
+      "PropertyGroupIds": [
+        "26d0472e-2e48-11ed-acc0-021d20f8a929",
+        "4d811471-5702-11ed-bc6e-06927b267943",
+        "e95d604c-32d7-11ee-812b-0278f7800139",
+        "7d663e76-7a68-11ee-812b-0278f7800139"
+      ],
+      "UnitEntryPreAuthorized": false,
+      "HasHomeWarrantyCoverage": false
+    },
+    "is_active": true,
+    "is_deleted": false,
+    "created": "2024-08-23T22:36:08.791558Z",
+    "create_by": null,
+    "updated": "2026-03-20T07:57:05.557591Z",
+    "update_by": null,
+    "uuid": "dfe4cde6-8e81-11ec-9d00-0add6b238094",
+    "deleted_from_source": null,
+    "resource": 40040921,
+    "meld_property": 1196654
+  },
+  "appfolio_association_link": null,
+  "links": [
+    {
+      "resource_id": "dfe4cde6-8e81-11ec-9d00-0add6b238094",
+      "deleted": null,
+      "active": true,
+      "integration": {
+        "id": 10468,
+        "enabled": true,
+        "name": "AppFolio",
+        "slug": "appfolio-api",
+        "logo_url": "img/appfolio.png",
+        "icon_url": "icons/appfolio.svg"
+      }
+    }
+  ],
+  "created": "2024-08-23T22:36:08.801447Z",
+  "create_by": null,
+  "updated": "2026-05-13T04:30:12.569866Z",
+  "update_by": null,
+  "is_active": true,
+  "supplemental_data": {
+    "AppFolio": {
+      "PropertyType": "Multi-Family",
+      "LastUpdatedAt": "2026-02-04T20:18:46Z",
+      "InsuranceExpiration": "2026-02-20",
+      "UnitEntryPreAuthorized": false
+    }
+  },
+  "line_1": "10017 N 18th Avenue & 1753 W Brown Street",
+  "line_2": "",
+  "line_3": "",
+  "city": "Phoenix",
+  "county_province": "AZ",
+  "postcode": "85021",
+  "property_name": "10017 N 18th Avenue & 1753 W Brown Street",
+  "country": "",
+  "other_address_details": "",
+  "latitude": null,
+  "longitude": null,
+  "denormalized_property_groups": [23999, 24214, 26021, 26023, 28732],
+  "maintenance_notes": "Safeco Insurance Company of America\r\nPolicy # OZ5269712\r\n***********************************\r\n: Any work needed over $150.00 will require approval from the Property Manager to complete. Any work completed without approval may be denied payment. Please contact your PM at 480-277-5131 for approval.\r\n\r\nHVAC Under warranty with Heaths Air. All Appliances Under 1 Year Warranty with Spencer's\r\nRoof Under warranty with Five Guys Roofing. ",
+  "maintenance_limit": 40000,
+  "is_association": false,
+  "location": "SRID=4326;POINT (-112.075096 33.44823)",
+  "year_built": 1961,
+  "home_warranty": false,
+  "op_group": 24
+}
