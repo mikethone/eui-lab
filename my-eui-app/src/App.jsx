@@ -6,6 +6,11 @@ import {
   EuiFlexGrid,
   EuiFlexItem,
   EuiIcon,
+  EuiListGroup,
+  EuiPanel,
+  EuiSpacer,
+  EuiText,
+  EuiTitle,
 } from '@elastic/eui';
 import FormPage from './pages/FormPage';
 import ResidentsListPage from './pages/ResidentsListPage';
@@ -36,20 +41,8 @@ const PAGES = [
   },
   {
     id: 'residents',
-    title: 'Residents (parity)',
+    title: 'Resident list',
     description: 'Manage resident accounts, invitations, and communication channels.',
-    icon: 'user',
-  },
-  {
-    id: 'residents-alt',
-    title: 'Residents (simple)',
-    description: 'Simplified layout using EuiBasicTable native responsive view.',
-    icon: 'user',
-  },
-  {
-    id: 'residents-datagrid',
-    title: 'Residents (EuiDataGrid)',
-    description: 'Data grid layout with built-in column controls and virtualization.',
     icon: 'user',
   },
   {
@@ -57,6 +50,20 @@ const PAGES = [
     title: 'Design Tokens',
     description: 'PM color, typography, and button tokens mapped to the EUI theme.',
     icon: 'layers',
+  },
+];
+
+// Alternate approaches we prototyped but didn't adopt — kept for reference.
+const EXPLORATIONS = [
+  {
+    id: 'residents-alt',
+    title: 'Residents (simple)',
+    description: 'Simplified layout using EuiBasicTable native responsive view.',
+  },
+  {
+    id: 'residents-datagrid',
+    title: 'Residents (EuiDataGrid)',
+    description: 'Data grid layout with built-in column controls and virtualization.',
   },
 ];
 
@@ -82,6 +89,29 @@ function HomePage() {
             </EuiFlexItem>
           ))}
         </EuiFlexGrid>
+
+        <EuiSpacer size="xl" />
+
+        <EuiPanel color="subdued" hasShadow={false} paddingSize="l">
+          <EuiTitle size="xs">
+            <h2>Explorations</h2>
+          </EuiTitle>
+          <EuiText size="s" color="subdued">
+            <p>Alternate approaches we prototyped but didn&apos;t adopt.</p>
+          </EuiText>
+          <EuiSpacer size="s" />
+          <EuiListGroup
+            flush
+            maxWidth={false}
+            listItems={EXPLORATIONS.map((page) => ({
+              label: page.title,
+              size: 's',
+              iconType: 'beaker',
+              toolTipText: page.description,
+              onClick: () => navigate(`/${page.id}`),
+            }))}
+          />
+        </EuiPanel>
       </EuiPageTemplate.Section>
     </EuiPageTemplate>
   );

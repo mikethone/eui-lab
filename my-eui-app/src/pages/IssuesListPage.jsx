@@ -319,7 +319,15 @@ function downloadCSV(issues) {
 
 // ─── Filter panel (popover contents) ─────────────────────────────────────────
 
-function FilterPanel({ filters, onChange, startDate, endDate, onTimeChange }) {
+function FilterPanel({
+  filters,
+  onChange,
+  dateEnabled,
+  onDateEnabledChange,
+  startDate,
+  endDate,
+  onTimeChange,
+}) {
   return (
     <div style={{ width: 380 }}>
       {FILTER_DEFS.map((def, i) => {
@@ -368,16 +376,23 @@ function FilterPanel({ filters, onChange, startDate, endDate, onTimeChange }) {
         );
       })}
       <EuiHorizontalRule margin="xs" />
-      <EuiText size="xs" color="subdued" style={{ marginBottom: 6 }}>
-        Created date range
-      </EuiText>
-      <EuiSuperDatePicker
-        start={startDate}
-        end={endDate}
-        onTimeChange={onTimeChange}
-        showUpdateButton={false}
-        width="full"
+      <EuiCheckbox
+        id="filter-enable-dateRange"
+        label="Created date range"
+        checked={dateEnabled}
+        onChange={() => onDateEnabledChange(!dateEnabled)}
       />
+      {dateEnabled && (
+        <div style={{ marginTop: 8 }}>
+          <EuiSuperDatePicker
+            start={startDate}
+            end={endDate}
+            onTimeChange={onTimeChange}
+            showUpdateButton={false}
+            width="full"
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -415,6 +430,7 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
   const [view, setView]                   = useState('table');
   const [searchText, setSearchText]       = useState('');
   const [emergencyOnly, setEmergencyOnly] = useState(false);
+  const [dateEnabled, setDateEnabled]     = useState(false);
   const [startDate, setStartDate]         = useState('now-90d');
   const [endDate, setEndDate]             = useState('now');
   const [selectedItems, setSelectedItems] = useState([]);
@@ -431,10 +447,12 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
   const applyPreset = (preset) => {
     setSearchText('');
     setEmergencyOnly(preset.emergencyOnly);
+    setDateEnabled(true);
     setStartDate(preset.startDate);
     setEndDate(preset.endDate);
     setAppliedFilters(preset.filters);
     setDraftFilters(preset.filters);
+    setDraftDateEnabled(true);
     setDraftStartDate(preset.startDate);
     setDraftEndDate(preset.endDate);
     setActivePresetId(preset.id);
@@ -452,20 +470,22 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
   const [isFilterOpen, setIsFilterOpen]     = useState(false);
   const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
   const [draftFilters, setDraftFilters]     = useState(DEFAULT_FILTERS);
+  const [draftDateEnabled, setDraftDateEnabled] = useState(false);
   const [draftStartDate, setDraftStartDate] = useState('now-90d');
   const [draftEndDate, setDraftEndDate]     = useState('now');
 
-  // Count enabled field filters + date range if non-default
+  // Count enabled field filters + date range if enabled
   const DEFAULT_START = 'now-90d';
   const DEFAULT_END   = 'now';
   const activeFilterCount =
     Object.values(appliedFilters).filter((f) => f.enabled && f.value !== '').length +
-    (startDate !== DEFAULT_START || endDate !== DEFAULT_END ? 1 : 0);
+    (dateEnabled ? 1 : 0);
 
   const openFilterPopover = () => {
     if (!isFilterOpen) {
       // Only sync draft to committed state when opening
       setDraftFilters(appliedFilters);
+      setDraftDateEnabled(dateEnabled);
       setDraftStartDate(startDate);
       setDraftEndDate(endDate);
     }
@@ -481,6 +501,7 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
 
   const applyFilters = () => {
     setAppliedFilters(draftFilters);
+    setDateEnabled(draftDateEnabled);
     setStartDate(draftStartDate);
     setEndDate(draftEndDate);
     setIsFilterOpen(false);
@@ -489,6 +510,8 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
   const clearFilters = () => {
     setDraftFilters(DEFAULT_FILTERS);
     setAppliedFilters(DEFAULT_FILTERS);
+    setDraftDateEnabled(false);
+    setDateEnabled(false);
     setDraftStartDate(DEFAULT_START);
     setDraftEndDate(DEFAULT_END);
     setStartDate(DEFAULT_START);
@@ -544,13 +567,15 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
     if (emergencyOnly)
       result = result.filter((m) => m.priority === 'high');
 
-    const parsedStart = dateMath.parse(startDate);
-    const parsedEnd   = dateMath.parse(endDate, { roundUp: true });
-    if (parsedStart && parsedEnd) {
-      result = result.filter((m) => {
-        const d = new Date(m.createdDate);
-        return d >= parsedStart.toDate() && d <= parsedEnd.toDate();
-      });
+    if (dateEnabled) {
+      const parsedStart = dateMath.parse(startDate);
+      const parsedEnd   = dateMath.parse(endDate, { roundUp: true });
+      if (parsedStart && parsedEnd) {
+        result = result.filter((m) => {
+          const d = new Date(m.createdDate);
+          return d >= parsedStart.toDate() && d <= parsedEnd.toDate();
+        });
+      }
     }
 
     // Apply panel filters (deferred-commit — only appliedFilters drives data)
@@ -570,7 +595,7 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
     });
 
     return sortIssues(result, sortField, sortDirection);
-  }, [searchText, emergencyOnly, startDate, endDate, appliedFilters, sortField, sortDirection]);
+  }, [searchText, emergencyOnly, dateEnabled, startDate, endDate, appliedFilters, sortField, sortDirection]);
 
   // ── Table config ──
 
@@ -815,6 +840,8 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
                   <FilterPanel
                     filters={draftFilters}
                     onChange={onFilterChange}
+                    dateEnabled={draftDateEnabled}
+                    onDateEnabledChange={setDraftDateEnabled}
                     startDate={draftStartDate}
                     endDate={draftEndDate}
                     onTimeChange={({ start, end }) => {
@@ -917,8 +944,8 @@ export default function IssuesListPage({ onNavigateHome, onNavigateToIssueForm }
                               <EuiFlexItem grow={false}>
                                 <EuiCheckbox
                                   id={`card-select-${issue.id}`}
-                                  checked={isCardSelected(meld)}
-                                  onChange={() => toggleCardItem(meld)}
+                                  checked={isCardSelected(issue)}
+                                  onChange={() => toggleCardItem(issue)}
                                   aria-label={`Select ${issue.ticketName}`}
                                 />
                               </EuiFlexItem>
