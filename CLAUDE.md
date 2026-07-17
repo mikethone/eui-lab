@@ -4,6 +4,19 @@ This is a React + Vite learning lab for Elastic UI (EUI) v113 with the Borealis 
 
 ---
 
+## Two zones — target state vs. faithful mirror
+
+This repo has two distinct kinds of code. Know which zone a file is in before editing:
+
+1. **Target-state pages (default zone)** — everything outside `src/proxies/`. This is idiomatic EUI: all the rules below apply. This is "what good looks like."
+2. **Proxy zone (`src/proxies/`)** — faithful mirrors of production `Pm*` components from `../propertymeld`, built for design examination on the Component Proxies page (`/proxies`). **The idiom rules below DO NOT apply here.** Proxies intentionally reproduce prod's actual choices — inline styles, hardcoded colors/spacing, non-idiomatic patterns, even shipped bugs — because their job is to show what prod really renders, not to be correct EUI. Do not "fix" a proxy to comply with lab rules; that would make it lie about the source. Each proxy's header comment logs what was removed (dependency noise) and which rule deviations are faithful-to-prod. Mirrored prod tokens live in `src/proxies/_pmSourceTokens.js` and must not leak into target-state pages.
+
+**Theme isolation.** Proxy specimens must render in *prod's* theme, not the lab's. Prod runs `<EuiProvider theme={EuiThemeBorealis} modify={overrides}>` (theme-overrides.ts); the lab runs `modify={pmTheme}` (euiTheme.js) — near-twins that drift. `src/proxies/_pmProdTheme.js` mirrors prod's `overrides` verbatim and is applied via a nested `<EuiThemeProvider modify={pmProdTheme}>` wrapped around each proxy's **live render only** on the Component Proxies page. Keep `_pmProdTheme.js` in sync with prod's theme-overrides.ts, NOT with euiTheme.js. Prod's `<GlobalStyles/>` is Chakra-compat CSS and is irrelevant to `Pm*` rendering — do not mirror it.
+
+The value of the repo is the **diff** between these two zones — current state next to target state — for understanding the `Pm*` layer and influencing it toward EUI adoption.
+
+---
+
 ## Stack
 
 - **EUI**: `@elastic/eui` v113, Borealis theme (default — no `theme` prop needed on `EuiProvider`)

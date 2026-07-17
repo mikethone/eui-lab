@@ -14,7 +14,9 @@
       "Read(//tmp/**)",
       "Read(//private/tmp/**)",
       "Bash(curl -s -o /tmp/issues_frame.png \"https://www.figma.com/api/mcp/asset/06cbc2e0-9e75-47da-8d8d-63fdc72e8e42\")",
-      "Bash(curl -s -o /tmp/toolbar_section.png \"https://www.figma.com/api/mcp/asset/33351611-39b5-4fee-8ecd-64ab89e5eadc\")"
+      "Bash(curl -s -o /tmp/toolbar_section.png \"https://www.figma.com/api/mcp/asset/33351611-39b5-4fee-8ecd-64ab89e5eadc\")",
+      "Bash(npx eslint *)",
+      "Bash(echo \"EXIT=$?\")"
     ]
   }
 }

@@ -18,7 +18,9 @@ import ResidentsListAltPage from './pages/ResidentsListAltPage';
 import ResidentsDataGridPage from './pages/ResidentsDataGridPage';
 import IssueFormPage from './pages/IssueFormPage';
 import IssuesListPage from './pages/IssuesListPage';
+import BillsListPage from './pages/BillsListPage';
 import TokensPage from './pages/TokensPage';
+import ProxiesPage, { PROXIES } from './pages/ProxiesPage';
 
 const PAGES = [
   {
@@ -38,6 +40,12 @@ const PAGES = [
     title: 'Issues List',
     description: 'Browse, filter, sort, and manage issues across all properties.',
     icon: 'tableDensityNormal',
+  },
+  {
+    id: 'bills',
+    title: 'Bills List',
+    description: 'Review, approve, and bill maintenance charges across your properties.',
+    icon: 'stats',
   },
   {
     id: 'residents',
@@ -94,6 +102,29 @@ function HomePage() {
 
         <EuiPanel color="subdued" hasShadow={false} paddingSize="l">
           <EuiTitle size="xs">
+            <h2>PM Component Proxies</h2>
+          </EuiTitle>
+          <EuiText size="s" color="subdued">
+            <p>Faithful mirrors of production Pm* components, one page each — for examination and discussion.</p>
+          </EuiText>
+          <EuiSpacer size="s" />
+          <EuiListGroup
+            flush
+            maxWidth={false}
+            listItems={PROXIES.map((proxy) => ({
+              label: proxy.id,
+              size: 's',
+              iconType: 'beaker',
+              toolTipText: proxy.summary,
+              onClick: () => navigate(`/proxies/${proxy.id}`),
+            }))}
+          />
+        </EuiPanel>
+
+        <EuiSpacer size="xl" />
+
+        <EuiPanel color="subdued" hasShadow={false} paddingSize="l">
+          <EuiTitle size="xs">
             <h2>Explorations</h2>
           </EuiTitle>
           <EuiText size="s" color="subdued">
@@ -132,10 +163,12 @@ export default function App() {
           onNavigateToIssueForm={() => navigate('/issue-form')}
         />
       } />
+      <Route path="/bills" element={<BillsListPage onNavigateHome={goHome} />} />
       <Route path="/residents" element={<ResidentsListPage onNavigateHome={goHome} />} />
       <Route path="/residents-alt" element={<ResidentsListAltPage onNavigateHome={goHome} />} />
       <Route path="/residents-datagrid" element={<ResidentsDataGridPage onNavigateHome={goHome} />} />
       <Route path="/tokens" element={<TokensPage onNavigateHome={goHome} />} />
+      <Route path="/proxies/:id" element={<ProxiesPage onNavigateHome={goHome} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
