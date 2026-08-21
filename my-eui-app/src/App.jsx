@@ -19,6 +19,7 @@ import ResidentsDataGridPage from './pages/ResidentsDataGridPage';
 import IssueFormPage from './pages/IssueFormPage';
 import IssuesListPage from './pages/IssuesListPage';
 import BillsListPage from './pages/BillsListPage';
+import BillFromEstimatePage from './pages/BillFromEstimatePage';
 import TokensPage from './pages/TokensPage';
 import ProxiesPage, { PROXIES } from './pages/ProxiesPage';
 
@@ -46,6 +47,12 @@ const PAGES = [
     title: 'Bills List',
     description: 'Review, approve, and bill maintenance charges across your properties.',
     icon: 'stats',
+  },
+  {
+    id: 'bill-from-estimate',
+    title: 'Generate Bill (Flyout)',
+    description: 'Multi-stage flyout wizard — Back in the header menu, Continue in the footer.',
+    icon: 'wrench',
   },
   {
     id: 'residents',
@@ -164,6 +171,7 @@ export default function App() {
         />
       } />
       <Route path="/bills" element={<BillsListPage onNavigateHome={goHome} />} />
+      <Route path="/bill-from-estimate" element={<BillFromEstimatePage onNavigateHome={goHome} />} />
       <Route path="/residents" element={<ResidentsListPage onNavigateHome={goHome} />} />
       <Route path="/residents-alt" element={<ResidentsListAltPage onNavigateHome={goHome} />} />
       <Route path="/residents-datagrid" element={<ResidentsDataGridPage onNavigateHome={goHome} />} />
